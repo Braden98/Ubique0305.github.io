@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
-<meta name="description" content="Ubik的技术分享与学习记录"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/default" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<meta name="description" content="Ubik的技术分享与学习记录"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/atom.xml" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
 <link rel="canonical" href="http://yoursite.com/page/5/"/>
 
 <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" /><script type="text/x-mathjax-config">
@@ -100,74 +100,6 @@
       <main id="main" class="main">
         <div class="content-wrapper">
           <div id="content" class="content"><section id="posts" class="posts"><article class="post">
-    <header class="post-header">
-      <h1 class="post-title"><a class="post-link" href="/2019/04/01/2019-05-31-%E6%9C%80%E9%95%BF%E5%9B%9E%E6%96%87%E5%AD%90%E4%B8%B2%E7%9A%84%E4%BC%98%E5%8C%96%E8%BF%87%E7%A8%8B/">最长回文子串的优化过程</a>
-        </h1>
-
-      <div class="post-meta">
-        <span class="post-time">
-          2019-04-01
-        </span></div>
-    </header>
-
-    <div class="post-content"><p>这里分享一道有趣的题目，笔者在 POJ 上使用多种不同的方法进行求解，这其中包括最基本的暴力解、动态规划、分治算法+字符串哈希以及 Manacher 算法和后缀数组。其算法的手写难度不断增加，但时间空间复杂度不断下降。</p>
-<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><blockquote>
-<p>聪明的计算机科学的学生安迪正在参加一个算法课，教授问学生一个简单的问题：“你能提出一个有效的算法来找出字符串中最大回文长度吗？”<br>如果一个字符串向前和向后读相同，例如“madam”是回文，而“ACM”则不是回文，则称为回文。<br>学生们认识到这是一个经典的问题，但无法给出一个比遍历所有子串和检查它们是否是回文的方法更好的解答，过了一会儿安迪举起手说：“好吧，我有一个更好的。”在他开始解释他的想法之前，他停了一会儿，然后说：“嗯，我有一个更好的算法！”.<br>如果你认为你知道安迪的最终解决方案，那就证明它吧！给定一个最多1000000个字符的字符串，查找并打印字符串中最大回文长度。</p>
-</blockquote>
-<h2 id="暴力解"><a href="#暴力解" class="headerlink" title="暴力解"></a>暴力解</h2><p>枚举字符串的每一个子串，判断其是否是回文串，如果是且比 <code>res.length()</code>，就更新 res 。枚举每个字串需要 O(n^2) 的时间复杂度，判断每一个子串是否为回文串需要 O(n) 的时间复杂度，因此，总的时间复杂度为 O(n^3). 思路非常简单，这里不再赘述,实现如下。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">longestPalindrome</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(s.isEmpty())&#123;</span><br><span class="line">            <span class="keyword">return</span> s;</span><br><span class="line">        &#125;</span><br><span class="line">        String res=s.substring(<span class="number">0</span>,<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; s.length(); i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = i + <span class="number">1</span>; j &lt;= s.length(); j++) &#123;</span><br><span class="line">                String k=s.substring(i,j);</span><br><span class="line">                String rk=<span class="keyword">new</span> StringBuffer(k).reverse().toString();</span><br><span class="line">                <span class="keyword">if</span>(k.equals(rk)&amp;&amp;k.length()&gt;res.length())&#123;</span><br><span class="line">                    res=k;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res.length();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="动态规划法"><a href="#动态规划法" class="headerlink" title="动态规划法"></a>动态规划法</h2><p>因为之前解决过最长公共子串 LCS 的问题，于是很自然地想到，将题目所给字符串倒置，利用回文串正序读和逆序读结果一样的特性，对其求 LCS ，res 就是本题的答案。但在制作 case 的时候，笔者发现这是错误的解法，因为一旦原来的字符串中已经同时存在某个字串及其逆序，这个算法就无法找到最长的那一个。比如abcdefcba，输出的是错误结果 abc。</p>
-<p>所以应该换如下思路：令 <code>dp[i][j]</code> 表示 <code>S[i]~S[j]</code> 所表示的子串是否是回文子串，是则为1，不是则为0，这样根据 <code>S[i]是否=S[j]</code> ，可以把转移情况分成两类</p>
-<ol>
-<li><code>S[i]==S[j]</code> ,那么只要 <code>S[i+1]～S[j-1]</code> 是回文子串，那么 <code>S[i]~S[j]</code> 就是回文子串，如果 <code>S[i+1]～S[j-1]</code> 不是回文子串，那么 <code>S[i]~S[j]</code> 就不是回文子串。</li>
-<li><code>S[i]!=S[j]</code> ，那么 <code>S[i]~S[j]</code> 就不是回文子串。</li>
-</ol>
-<p>由此可得状态转移方程 </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dp[i][j]=S[i]==S[j]? dp[i+<span class="number">1</span>][j-<span class="number">1</span>]:<span class="number">0</span>;</span><br></pre></td></tr></table></figure>
-<p>但还有一个问题，对于该状态转移方程，如果按照 i 和 j 从小到大的顺序来枚举子串的两个端点，然后更新 <code>dp[i][j]</code> ，会无法保证 <code>dp[i+1][j-1]</code> 已经被计算过，出现空指针异常。注意到回文子串的对称性，通过手动计算 dp 二维数组，发现可通过枚举子串长度的方式进行第一轮遍历，第二遍按照子串的初始位置进行遍历，如此，即可获得正确的dp数组。<br>时间复杂度方面，先枚举子串的长度再枚举作第一轮循环，再枚举子串的起始端点作为第二轮循环，因此时间复杂度为 O(n^2),比最基本的蛮力法要好多了。关键代码如下所示（笔者大二上提交 OJ 的 C++ 代码）</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> L = <span class="number">3</span>; L &lt;= len; L++)<span class="comment">//枚举子串的长度作为一轮遍历的方法</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i + L - <span class="number">1</span> &lt; len; i++)<span class="comment">//枚举子串的起始端点作为第二轮循环</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> j = i + L - <span class="number">1</span>;<span class="comment">//子串的右端点</span></span><br><span class="line">        <span class="keyword">if</span> (S[i] == S[j] &amp;&amp; dp[i + <span class="number">1</span>][j - <span class="number">1</span>] == <span class="number">1</span>) &#123;</span><br><span class="line">            dp[i][j] = <span class="number">1</span>;</span><br><span class="line">            ans = L;<span class="comment">//更新最长回文子串长度</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>对于该二重循环，显然其时间复杂度为 O(n^2)。</p>
-<h2 id="中心扩展法"><a href="#中心扩展法" class="headerlink" title="中心扩展法"></a>中心扩展法</h2><p>从上述动态规划算法中注意到回文子串的中心对称性，可以从字符串的中心开始，向两边分别扩散来检查回文，且对每一个字符都如此操作。每个中心的检查需要线性时间复杂度，遍历整个字符串也是如此，因此总的复杂度为O(n^2)。注意需要分 aba 和 abba 两种情况讨论</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">​    <span class="function"><span class="keyword">public</span> String <span class="title">longestPalindrome</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">​            <span class="keyword">if</span> (s.length() &lt; <span class="number">2</span>) &#123; </span><br><span class="line">​               <span class="keyword">return</span> s;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">int</span> maxLength = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> center = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; s.length(); i++)&#123;</span><br><span class="line">            <span class="keyword">int</span> begin = centerExpand(s, i, i);                     </span><br><span class="line">            <span class="keyword">int</span>  end = centerExpand(s, i, i + <span class="number">1</span>);    </span><br><span class="line">            <span class="keyword">if</span> (maxLength &lt; Math.max(begin, end))&#123;</span><br><span class="line">                center = i;                                                 </span><br><span class="line">                maxLength = Math.max(begin, end);        </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> s.substring(center - (maxLength - <span class="number">1</span>) / <span class="number">2</span>, center + maxLength / <span class="number">2</span> + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">centerExpand</span><span class="params">(String s, <span class="keyword">int</span> begin, <span class="keyword">int</span> end)</span></span>&#123;</span><br><span class="line">        <span class="keyword">int</span> left = begin, right = end;</span><br><span class="line">        <span class="keyword">while</span> (left &gt;= <span class="number">0</span> &amp;&amp; right &lt; s.length() &amp;&amp; s.charAt(left) == s.charAt(right))&#123;</span><br><span class="line">            left--;</span><br><span class="line">            right++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> right - left - <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<h2 id="字符串-Hash-amp-二分"><a href="#字符串-Hash-amp-二分" class="headerlink" title="字符串 Hash &amp; 二分"></a>字符串 Hash &amp; 二分</h2><p>在讲之前需要了解字符串进制哈希和查询子串的 hash 值 ，字符串哈希就是一种字符串到数字的映射。进制哈希就是规定进制数 base 和模数 mod 后，将字符串从 a-z 对应 0-26 按 26 进制转换后取模的过程。当然，为了防止哈希冲突（不同字符串有相同哈希值），你可以设置双哈希、大质数来尽可能避免。</p>
-<p>例如某字符串前缀的哈希值记为：h[i]，我们哈希时使用的进制为 base，那么有 <code>h[i]=h[i-1]*base+s[i]</code>,记 p[i] 表示 base<br>的 i 次方。从而我们可以以常数时间复杂度得到字符串某子串的哈希值。就像对于数字，1234567，你想获得345，那就用<code>12345-12*345.length*base</code>一样，当然这里的base是10.被减数是12345而不是1234567.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ull <span class="title">get_hash</span><span class="params">(<span class="keyword">int</span> l, <span class="keyword">int</span> r)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> h[r] - h[l - <span class="number">1</span>] * p[r - l + <span class="number">1</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>然后回到回文串的问题，注意到回文子串具有单调性，即回文串的包含中心的子串也是回文串。因此我们可以进行二分，注意和上边的方法一样，需要区分奇回文aba和偶回文abba，最终结果取大即可。奇回文举例如下</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">binary_Search_od</span><span class="params">(<span class="keyword">int</span> left,<span class="keyword">int</span> right)</span><span class="comment">//二分答案中的奇数</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> maxx=<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span>(left &lt;=right)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> mid=(left+right)&gt;&gt;<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">int</span> val=ask(od[mid]);<span class="comment">//判断长度有没有为am[mid]的回文</span></span><br><span class="line">        <span class="keyword">if</span>(val)<span class="comment">//如果存在且大于maxx，更新maxx</span></span><br><span class="line">        &#123;</span><br><span class="line">            left=mid+<span class="number">1</span>;</span><br><span class="line">            maxx=max(maxx,val);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            right=mid-<span class="number">1</span>;<span class="comment">//否则减小长度</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> maxx;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>从 master theorem 来看，由于哈希的常数时间复杂度，整个的时间复杂度达到了 O(nlogn),比之前的中心扩展、dp 都要好。</p>
-<h2 id="Manacher-算法"><a href="#Manacher-算法" class="headerlink" title="Manacher 算法"></a>Manacher 算法</h2><p>上边几种算法都是当初刷 OJ 自己想出来的，但这个算法太过于巧妙以至于我花了蛮久来理解。该算法由 Glenn Manacher 于1975年发明。是我们先梳理求解过程，然后试图通过对称性理解。<br>该方法基于之前O(n^2)的中心扩展法，Manacher 算法的核心在于之前字符的“扩充”过程可以指导之后字符的“扩充”过程，使得之后每次扩充过程都不是从零开始。具体方法如下</p>
-<ol>
-<li><p>把每个字符开头、中间和结尾插入填充字符如 # 来组成新的字符串以解决奇回文和偶回文不统一问题。确切的说是处理了偶回文问题，如cc，扩充后为#c#c#,可以从中间轴#处扩充并找到。这个过程是线性时间复杂度的。如下所示</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">char</span>[] manacherString(String str) &#123;</span><br><span class="line">		<span class="keyword">char</span>[] charArr = str.toCharArray();</span><br><span class="line">		<span class="keyword">char</span>[] res = <span class="keyword">new</span> <span class="keyword">char</span>[str.length() * <span class="number">2</span> + <span class="number">1</span>];</span><br><span class="line">		<span class="keyword">int</span> index = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i != res.length; i++) &#123;</span><br><span class="line">			res[i] = (i &amp; <span class="number">1</span>) == <span class="number">0</span> ? <span class="string">'#'</span> : charArr[index++];</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> res;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>对每个字符进行类似之前中心扩展法一样的扩充过程。设置如下三个辅助变量</p>
-<pre><code>- 数组 pArr，长度等同于处理后的字符串，pArr[i]的意义是以 i 位置上的字符作为回文中心的情况下，扩出去得到的最大回文半径是多少。比如对于字符串str： #d#b#u#b#d# 来说，pArr为[1,2,1,2,1,6,1,2,1,2,1]
-
-- 整数 pR，指之前遍历的所有字符的所有回文半径中，最右即将到达的位置。还是用 #d#b#u#b#d# 为例：没遍历之前 pR 为 -1，str[0]=&apos;#&apos;，其回文半径为1，所以目前回文半径向右只能扩展到0位置，即将到达的位置为 pR=1。pR只会增大不会减小。
-- 整数 index，最近一次 pR 更新时，回文中心的位置。如 str[0] 时 pR更新，index 就为0.</code></pre></li>
-<li><p>pArr 中的最大值就是处理后的 str 的最大回文半径，再对应回未加 # 前的字符串，问题就解决了。步骤3就是从左到右计算 pArr 的过程，就是在这个过程中有些情况获得了加速从而最终获得线性时间复杂度。</p>
-<pre><code>- 假设现在计算到 str[i]，在i之前的计算过程中，pR和index都是动态更新的。可以分为两种情况。
-- 如果pR-1位置没有包住当前的i位置，#d#b#u#b#d# 计算到str[1]=&apos;u&apos;，pR=1，此时和普通做法一样，从i位置向两侧扩展，这样并没有获得加速。
-- 如果pR-1位置包住了当前的i位置，如#d#b#u#b#d#计算到 str[6...10]的时候，pR始终为11，此时可以获得优化。根据之前的pR定义我们知道，以 index 为中心，pR-1和pR-1关于index对称的字符是回文串，我们将其称为大回文串。以遍历所在当前位置i为中心的回文串称为右小，i关于index对称的称为左小，有三种情况  
-1. 左小和右小完全在左大和右大内部，此时以位置i为中心的最大回文串可以直接确定为从右小&apos;到左小&apos;这一部分。
-2. 左小和右小的左侧部分在左大和右大的外部，此时可以直接确定以i为中心的最长回文子串为为右大到右大&apos;这一部分
-3. 左小和左大是同一位置，即以i&apos;为中心的最大回文串压在以 index 为中心的最大回文串边界上，此时右小和右大&apos;也肯定同一个位置，此时以i为中心的最大回文串至少是右大&apos;和右大这一段，但可能更大。</code></pre></li>
-</ol>
-<p>时间复杂度分析，我们可以看出来 Manacher 算法在检查过程中有明显优化，从步骤3来看，在计算一个未知的回文半径时要么完全不需要扩出去检查，要么每扩出去都会让回文半径 pR 到达更右的位置，pR前边已经定义过，只增不减，因此时间复杂度就是O(n)啦。<br>代码实现</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">maxLcpsLength</span><span class="params">(String str)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (str == <span class="keyword">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">char</span>[] charArr = manacherString(str);</span><br><span class="line">		<span class="keyword">int</span>[] pArr = <span class="keyword">new</span> <span class="keyword">int</span>[charArr.length];</span><br><span class="line">		<span class="keyword">int</span> index = -<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">int</span> pR = -<span class="number">1</span>;</span><br><span class="line">		<span class="keyword">int</span> max = Integer.MIN_VALUE;</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i != charArr.length; i++) &#123;</span><br><span class="line">			pArr[i] = pR &gt; i ? Math.min(pArr[<span class="number">2</span> * index - i], pR - i) : <span class="number">1</span>;</span><br><span class="line">			<span class="keyword">while</span> (i + pArr[i] &lt; charArr.length &amp;&amp; i - pArr[i] &gt; -<span class="number">1</span>) &#123;</span><br><span class="line">				<span class="keyword">if</span> (charArr[i + pArr[i]] == charArr[i - pArr[i]])</span><br><span class="line">					pArr[i]++;</span><br><span class="line">				<span class="keyword">else</span> &#123;</span><br><span class="line">					<span class="keyword">break</span>;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (i + pArr[i] &gt; pR) &#123;</span><br><span class="line">				pR = i + pArr[i];</span><br><span class="line">				index = i;</span><br><span class="line">			&#125;</span><br><span class="line">			max = Math.max(max, pArr[i]);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> max - <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
-
-
-<p> 按照步骤3得到 pArr 之后，再遍历一遍 aArr 数组，找到最大回文半径，然后对应回原来的长度即可（-1）。</p>
-<h2 id="后缀树"><a href="#后缀树" class="headerlink" title="后缀树"></a>后缀树</h2><p>Manacher 算法虽然巧妙，但是需要很大的技巧，理解有些困难，这里有一种更加通用的解法，就是后缀树。<br>设S[i]表示字符串从i位置到最后的子数组，用S[i…S.length()-1]这些子数组构造 <a href="https://ubique0305.github.io/2019/03/22/Trie/" target="_blank" rel="noopener">Trie 树</a>，就得到后缀树。且将重复节点按如下规则<br>        1. 每个节点可以存储多个字母<br>        2. 字符串后+一个符号结尾，以防因某后缀是其他后缀的前缀而被压缩<br>压缩后，就得到压缩后缀树。</p>
-<p>那么这和最长回文子串有什么关系呢？实际上有如下关系 <strong>str与其逆序的最长公共前缀是其最长回文子串的半径对应的字符串</strong>，从而，我们将求最长回文子串的问题转化为求某字符串与其逆序的最长公共前缀问题（LCA），利用 trie 求 LCA 方法如下：反转 str，两者生成的所有后缀子串压入到 trie 中，计算<code>S1(i)</code>与<code>S2(n-i+1)</code>节点的最低公共祖先,从而得到其最长公共前缀,再得到最长回文子串。<br>所以问题转化为求两棵树的最低公共祖先，这个问题之前已经解决过了，<a href="https://ubique0305.github.io/2019/03/23/二叉树中两节点的最近公共祖先/" target="_blank" rel="noopener">在这里</a>。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>从暴力，到动态规划，到利用其对称性的中心扩展法，再到进位哈希+二分，然后是 Manacher 和后缀树，可以看出，因为回文串特殊的中心对称性，最优解可以做到线性时间复杂度————不可能更低了，你至少需要扫描一遍字符串。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a href="https://www.cnblogs.com/henry-1202/p/10324966.html" target="_blank" rel="noopener">hash进阶：使用字符串hash乱搞的姿势</a></li>
-<li><a href="https://blog.csdn.net/ice110956/article/details/17299453" target="_blank" rel="noopener">后缀树与最长回文子串</a></li>
-</ul>
-
-        </div></article>
-      <article class="post">
     <header class="post-header">
       <h1 class="post-title"><a class="post-link" href="/2019/04/01/2019-07-05-Scylla&TiDB%20TiKV&glusterFS%E5%88%9D%E6%AD%A5%E5%AD%A6%E4%B9%A0/">Scylla&TiDB TiKV&CQL 入门</a>
         </h1>
@@ -407,6 +339,52 @@ DESCRIBE TYPES -描述用户定义的数据类型。</code></pre><h2 id="list"><
 <li>字符串排序</li>
 <li>前缀匹配</li>
 <li>辅助结构如后缀树和AC自动机</li>
+</ol>
+
+        </div></article>
+      <article class="post">
+    <header class="post-header">
+      <h1 class="post-title"><a class="post-link" href="/2019/03/13/2019-07-17-%E5%B9%82%E7%AD%89%E6%80%A7%E7%9A%84%E6%8E%A2%E7%B4%A2/">幂等性解决方案初探</a>
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-03-13
+        </span></div>
+    </header>
+
+    <div class="post-content"><h1 id="abstract"><a href="#abstract" class="headerlink" title="abstract"></a>abstract</h1><p>讨论了幂等性的概念，在工业中遇到的问题、解决方案及在业务中的实际使用</p>
+<h1 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h1><p>幂等性原是数学上的概念，表述如下</p>
+<p><code>f(f(x)) = f(x)</code></p>
+<p>对应到软件领域，即为多次调用同一接口，结果一致。这里的结果包括服务器数据、状态，不包括返回值（如第一次写入成功，后续应为抛出异常或空操作，删除同理）。简单理解就是<strong>接口的可重复调用</strong>。<br>注意，数学上和工业上的<strong>幂等</strong>差别非常大，以下考虑都基于工业上的幂等。</p>
+<h1 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h1><ol>
+<li><p>前端对同一表单数据的重复提交，后台应该只会产生一个结果</p>
+</li>
+<li><p>发起一笔付款请求，应该只扣用户账户一次钱，当遇到网络重发或系统bug重发，也应该只扣一次钱</p>
+</li>
+<li><p>发送消息，也应该只发一次，同样的短信如果多次发给用户，用户会崩溃</p>
+</li>
+<li><p>创建业务订单，一次业务请求只能创建一个，不能出现创建多个订单</p>
+</li>
+</ol>
+<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><h3 id="1-全局ID"><a href="#1-全局ID" class="headerlink" title="1. 全局ID"></a>1. 全局ID</h3><p>在执行操作前先根据这个全局唯一ID是否存在，来判断这个操作是否已经执行。如果不存在则把全局ID，存储到存储系统中，比如数据库、Redis等。如果存在则表示该方法已经执行。</p>
+<h3 id="2-去重表"><a href="#2-去重表" class="headerlink" title="2. 去重表"></a>2. 去重表</h3><p>这种方法适用于在业务中有唯一标的插入场景中，比如在以上的支付场景中，如果一个订单只会支付一次，所以订单ID可以作为唯一标识。这时，我们就可以建一张去重表，并且把唯一标识作为唯一索引，在我们实现时，把创建支付单据和写入去去重表，放在一个事务中，如果重复创建，数据库会抛出唯一约束异常，操作就会回滚。</p>
+<p>这是利用数据库表单的特性来实现幂等。以订单请求支付场景为例：<br>将订单号orderId设为去重表的唯一索引，每次请求支付都根据订单号向去重表中插入一条数据，只有插入成功才继续执行支付操作，相当于在事务的开始阶段加锁。<br>考虑两种失败的情况：</p>
+<p>Insert去重表失败，事务回滚，无任何影响；<br>Insert去重表成功，支付业务操作失败，事务回滚，删除之前插入去重表的记录，无任何影响；<br>以上两种失败的情况下，事务的幂等性是可以保持的，避免了单个订单同时多次进行支付的情况。<br>下图为该支付场景下的时序图：</p>
+<p><img src="/img/7B339387CF3E7D841EAE7E1CC3FCE9BB.jpg" alt="插图"></p>
+<h3 id="3-插入或更新"><a href="#3-插入或更新" class="headerlink" title="3. 插入或更新"></a>3. 插入或更新</h3><p>这种方法插入并且有唯一索引的情况，比如我们要关联商品品类，其中商品的ID和品类的ID可以构成唯一索引，并且在数据表中也增加了唯一索引。这时就可以使用InsertOrUpdate操作</p>
+<h3 id="4-分布式锁"><a href="#4-分布式锁" class="headerlink" title="4. 分布式锁"></a>4. 分布式锁</h3><p>在传统的基于数据库的架构中，对于数据的抢占问题往往是通过数据库事务（ACID）来保证的。在分布式环境中，出于对性能以及一致性敏感度的要求，使得分布式锁成为了一种比较常见而高效的解决方案。</p>
+<blockquote>
+<p>基本上所有的并发模式在解决线程冲突问题的时候，都是采用序列化访问共享资源的方案。</p>
+</blockquote>
+<p>与去重表思路相同，只是将对数据库的的访问转移到了对缓存（如redis）的访问，提高了效率。具体操作如下：<br>订单发起支付请求，支付系统会去redis缓存中查询是否存在该订单号orderId的key，如果不存在，则向redis增加key为订单号，然后开始实际支付操作；如果查询到存在该订单号的key，则不进行实际支付操作。无论支付操作成功或失败，在支付操作结果返回后，在缓存中删除该订单号key。</p>
+<h1 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h1><h2 id="如何防范表单-POST-重复提交？"><a href="#如何防范表单-POST-重复提交？" class="headerlink" title="如何防范表单 (POST) 重复提交？"></a>如何防范表单 (POST) 重复提交？</h2><p>HTTP POST 操作既不是安全的，也不是幂等的（至少在HTTP规范里没有保证）。当我们因为反复刷新浏览器导致多次提交表单，多次发出同样的POST请求，导致远端服务器重复创建出了资源。所以，对于电商应用来说，第一，对应的后端 WebService 一定要做到幂等性；第二，服务器端收到 POST 请求，在操作成功后必须302跳转到另外一个页面，这样即使用户刷新页面，也不会重复提交表单。</p>
+<h2 id="分布式下异步"><a href="#分布式下异步" class="headerlink" title="分布式下异步"></a>分布式下异步</h2><p>分布式的很多业务考虑更多的是 BASE（即Basically Available、Soft state、和Eventually consistent），而不是 ACID（Atomicity、Consistency、Isolation和 Durability）。即为了满足高负载的用户访问，我们可以容忍短暂的数据不一致。那怎么做呢？</p>
+<p>不做分布式事务，代价太大<br>不一定需要实时一致性，只需要保证最终的一致性即可<br>通过状态机和严格的有序操作，来最大限度地降低不一致性<br>最终一致性（Eventually Consistent）通过异步事件做到<br>如果消息具有操作幂等性，也就是一个消息被应用多次与应用一次产生的效果是一样的话，那么把不需要同步执行的事务交给异步消息推送和订阅者集群来处理即可。假如消息处理失败，那么就消息重播，由于幂等性，应用多次也能产生正确的结果。</p>
+<p>实际情况下，消息很难具有幂等性，解决方法是使用另一个表记录已经被成功应用的消息，即消息队列和消息应用状态表一起来解决问题。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><a href="https://segmentfault.com/a/1190000015884659" target="_blank" rel="noopener">幂等的实现方案</a></li>
+<li><a href="https://www.caosh.me/be-tech/idempotence-using-unique-key/" target="_blank" rel="noopener">使用数据库唯一键实现事务幂等性</a></li>
 </ol>
 
         </div></article>

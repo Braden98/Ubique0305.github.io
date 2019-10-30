@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
 
-<meta name="description" content="Ubik的技术分享与学习记录"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/default" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<meta name="description" content="Ubik的技术分享与学习记录"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/atom.xml" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
 <link rel="canonical" href="http://yoursite.com/"/>
 
 <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" /><script type="text/x-mathjax-config">
@@ -100,32 +100,6 @@
       <main id="main" class="main">
         <div class="content-wrapper">
           <div id="content" class="content"><section id="posts" class="posts"><article class="post">
-    <header class="post-header">
-      <h1 class="post-title"><a class="post-link" href="/2019/10/29/hello-world/">Hello World</a>
-        </h1>
-
-      <div class="post-meta">
-        <span class="post-time">
-          2019-10-29
-        </span></div>
-    </header>
-
-    <div class="post-content"><p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-        </div></article>
-      <article class="post">
     <header class="post-header">
       <h1 class="post-title"><a class="post-link" href="/2019/08/01/2019-08-02-Rust%20%E7%9A%84%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/">Rust 的错误处理</a>
         </h1>
@@ -368,6 +342,56 @@
 </li>
 </ol>
 <p><a href="https://cloud.tencent.com/developer/article/1006226" target="_blank" rel="noopener">MESI是一种内存缓存一致性协议</a>， 存在“modified”，“exclusive”，“shared”和“invalid”四种状态，协议可以在一个指定的缓存行中应用这四种状态。因此，协议在每一个缓存行中维护一个两位的状态标记，这个标记附着在缓存行的物理地址和数据后面。</p>
+
+        </div></article>
+      <article class="post">
+    <header class="post-header">
+      <h1 class="post-title"><a class="post-link" href="/2019/06/13/2019-07-04-%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0%E5%8F%8AGET%20Bucket%20(List%20Objects)%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98/">对象存储的优势及实习问题记录</a>
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-06-13
+        </span></div>
+    </header>
+
+    <div class="post-content"><h1 id="对象存储"><a href="#对象存储" class="headerlink" title="对象存储"></a>对象存储</h1><p>“对象存储”来源于英文“Object Storage”或“Object-based Storage”</p>
+<h3 id="特性与目标"><a href="#特性与目标" class="headerlink" title="特性与目标"></a>特性与目标</h3><p>多租户<br>不假设数据特征，包括类型，大小等<br>存储空间可无限扩展，且性能该随容量水平扩展而线性提升，不然数据量越大，请求越多，性能却不提升，系统的存取性能只会越来越慢<br>数据安全<br>服务高可靠</p>
+<h3 id="索引设计"><a href="#索引设计" class="headerlink" title="索引设计"></a>索引设计</h3><p>顶级命名空间service+bucket即可</p>
+<h3 id="元信息"><a href="#元信息" class="headerlink" title="元信息"></a>元信息</h3><p>属于哪个存储空间<br>类型<br>大小<br>校验值<br>最后修改时间</p>
+<h4 id="特殊元信息"><a href="#特殊元信息" class="headerlink" title="特殊元信息"></a>特殊元信息</h4><p>演唱者是谁<br>作词者是谁<br>作曲者是谁<br>属于哪张唱片<br>属于什么风格</p>
+<h1 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h1><p>传统存储中，块存储暴露Block 文件系统或者网络文件系统如NFS暴露POSIX接口</p>
+<h2 id="DAS-Direct-Attached-Storage"><a href="#DAS-Direct-Attached-Storage" class="headerlink" title="DAS  Direct-Attached Storage"></a>DAS  Direct-Attached Storage</h2><p>直连式存储。直接连接到某台计算机且其他计算机无法获取，如PC的硬盘驱动器。因为服务器无需通过网络来读写数据，所以DAS能为终端用户提供比网络存储更高的性能。如微软公司推荐使用DAS安装Exchange。<br>缺点是依赖服务器主机操作系统进行数据的IO读写和存储维护管理，数据备份和恢复要求占用服务器主机资源（包括CPU、系统IO等）。直连式存储的数据量越大，备份和恢复的时间就越长，对服务器硬件的依赖性和影响就越大。 </p>
+<h2 id="NAS-Network-Attached-Storage"><a href="#NAS-Network-Attached-Storage" class="headerlink" title="NAS  Network-Attached Storage"></a>NAS  Network-Attached Storage</h2><p>网络附属存储/网络接入存储<br>简单说就是连接在网络上，具备资料存储功能的装置，也因此称为网络存储器。将存储设备与服务器彻底分离，底层磁盘通过文件系统类型（分区，格式化后）通过网络的方式（发送ip包）共享给前端应用</p>
+<h2 id="SAN-Storage-Area-Network"><a href="#SAN-Storage-Area-Network" class="headerlink" title="SAN Storage Area Network"></a>SAN Storage Area Network</h2><p>存储区域网络<br> 通过光纤设备将存储设别和服务器连接一起，数据和服务器分离，底层磁盘以块的模式共享给前端的应用服务器。<br> SAN是一个采用网状通道（简称FC）技术，通过FC交换机连接存储阵列和服务器主机，建立专用于数据存储的区域网络。<br> <img src="/img/5E33AC1A918F56A6FFCF48F433A594BF.jpg" alt="插图"></p>
+<h1 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h1><ul>
+<li><p>服务可用性更高<br>通过支持对象数据的高可靠性和业务节点的高可靠性网络、节点的多冗余设计，系统设计可用性达到99.99%。</p>
+</li>
+<li><p>数据可靠性更高<br>通过提供对象数据多份冗余和保证多份对象的数据一致性自动修复技术来提供对象数据的高可靠性。OBS系统设计的数据持久性高达99.999999999%（11个9），意为对象存储服务里1000亿个用户文件，每月最多只有1个文件发生数据丢失的可能性。</p>
+</li>
+<li><p>用户数据更安全<br>用户数据传输到OBS时支持SSL加密，同时，OBS通过AK/SK对访问用户的身份进行鉴权，且结合了ACL、桶策略等多种方式对桶和对象进行访问控制，确保数据传输与访问的安全。此外，用户所上传的对象数据在对象存储服务中分片随机存储在不同硬盘上，所以即便磁盘数据被盗走，也无法将其还原成对象数据。</p>
+</li>
+<li><p>容量无限扩展<br>OBS所有业务、存储节点采用分布式集群方式工作，各功能节点、集群都可以独立扩容，整个扩容过程对用户完全透明。用户只需尽情享用云存储带来的无限空间，不必预测未来的存储需求并可以按需要向上和向下扩展，从而大幅提高业务灵活性。</p>
+</li>
+<li><p>维护成本更低<br>由于数据存储在OBS中，企业无需招聘专门的存储设备维护人员，设备的维护交由OBS处理即可。</p>
+</li>
+</ul>
+<h1 id="实习问题记录"><a href="#实习问题记录" class="headerlink" title="实习问题记录"></a>实习问题记录</h1><h2 id="为什么GET-Bucket-List-Objects-在Object多时会慢？"><a href="#为什么GET-Bucket-List-Objects-在Object多时会慢？" class="headerlink" title="为什么GET Bucket (List Objects)在Object多时会慢？"></a>为什么GET Bucket (List Objects)在Object多时会慢？</h2><p>原问题“get bucket那个接口的实现比较麻烦，在object的量很大的情况下，这个接口的性能会很差。你可以想想这个问题”<br>根据API文档所说</p>
+<ol>
+<li>数据量大，多次循环调用该 API才可获得给定 Prefix 条件的所有对象列表。不像其他API只需要一次Http通信；网络通信次数多，</li>
+<li>需要模拟文件系统的目录结构，对delimiter划分的相同前缀的多个对象遍历和合并。底层实现需要较深的函数调用栈或者内存空间。</li>
+<li>Object数量多时更改更频繁，缓存容易失效</li>
+</ol>
+<p>不知道元信息的存储系统是否支持事务，如果不支持，并发情况下我觉得会加共享锁（读锁），锁竞争也会带来性能开销。可以用redis、zookeeper做分布式协调组件的情况下，可以多个请求竞争一个锁，只有一个请求到达并被处理，然后更新缓存供其他请求使用，从而提高吞吐量</p>
+<p>就是关于 GET Bucket (List Objects)在Object多时性能很差的问题，有没有这几个原因</p>
+<ol>
+<li>网络IO次数多。根据文档所说，利用marker参数多次迭代调用该 API才可获得给定 Prefix 条件的所有对象列表。</li>
+<li>计算资源消耗大。文档说支持用delimiter模拟文件系统的目录结构，对delimiter划分的相同前缀的多个对象遍历和合并。这需要较深的函数调用栈或者内存空间以及计算量。</li>
+<li>保持实时性和一致性带来的开销。如文档所说，缓存容易失效，这会导致更多磁盘IO和数据处理。且读取过程中要加共享锁防止元数据被修改导致的一致性问题。</li>
+</ol>
+<p>看文档我觉得服务器应该是一次完成所有数据的处理，但要分段返回是因为数据可能太大吗？</p>
+<p>关于处理方法<br>文档说因为性能问题不要依赖这个接口的并发调用，而是用户自己缓存数据，这是不是说对数据的准确性要求不太高。那这样后端在并发情况下通过选举其中一个请求到达服务器，从mysql或别的拿到结果放入缓存，其他请求都走缓存，就可以一定程度解决吞吐量的问题。同样，通过elasticsearch或者其他放弃事务机制的搜索方式元数据提高响应速度</p>
+<h2 id="Q：“假设现在数据量在单机承受能力之内，用mysql来存储元信息，怎么处理list请求”"><a href="#Q：“假设现在数据量在单机承受能力之内，用mysql来存储元信息，怎么处理list请求”" class="headerlink" title="Q：“假设现在数据量在单机承受能力之内，用mysql来存储元信息，怎么处理list请求”"></a>Q：“假设现在数据量在单机承受能力之内，用mysql来存储元信息，怎么处理list请求”</h2><p>比如按照Zone划分表，表中有所属bucket信息，类型，大小，校验值，最后修改时间，特殊元信息等字段，可以在编程语言层面记录已经处理过的bucket，实现下次根据marker参数继续处理。事务机制（隔离性）可以方便地保证一致性问题，同时可以对marker或其他字段走索引加快IO速度。<br>mysql8之后已不自带缓存，如文档所说如果要加缓存可以用redis。同时在编程语言层面利用元信息的最后修改时间字段实现缓存自动更新。</p>
 
         </div></article>
       <article class="post">
