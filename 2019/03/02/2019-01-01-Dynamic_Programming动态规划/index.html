@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="动态规划-入门篇"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/default" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="http://yoursite.com/2019/03/02/2019-01-01-Dynamic_Programming动态规划/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" /><script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":true};
+</script>
+
+    <title>动态规划-入门篇 - Ubik's blog</title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Ubik's blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">Home
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">Archives
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Ubik's blog</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            Home
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            Archives
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            Tags
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            About
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">动态规划-入门篇
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-03-02
+        </span></div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">Contents</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#abstract"><span class="toc-text">abstract</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Dynamic-Programming"><span class="toc-text">Dynamic Programming</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#两种写法"><span class="toc-text">两种写法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#递归"><span class="toc-text">递归</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#递推"><span class="toc-text">递推</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#三个概念"><span class="toc-text">三个概念</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#重叠子问题"><span class="toc-text">重叠子问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#最优子结构"><span class="toc-text">最优子结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#无后效性"><span class="toc-text">无后效性</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#理解"><span class="toc-text">理解</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#题解思考与记录"><span class="toc-text">题解思考与记录</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#343"><span class="toc-text">343</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#279"><span class="toc-text">279</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#509"><span class="toc-text">509</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#思路"><span class="toc-text">思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#代码"><span class="toc-text">代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#70-爬楼梯"><span class="toc-text">70 爬楼梯</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#思路-1"><span class="toc-text">思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#代码-1"><span class="toc-text">代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#746"><span class="toc-text">746</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#思路-2"><span class="toc-text">思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#代码-2"><span class="toc-text">代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#91-解码方法"><span class="toc-text">91 解码方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#思路-3"><span class="toc-text">思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#代码-3"><span class="toc-text">代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#62-机器人-不同路径"><span class="toc-text">62 机器人 不同路径</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#思路-4"><span class="toc-text">思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#代码-4"><span class="toc-text">代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#300-LIS-最长上升子序列"><span class="toc-text">300 LIS 最长上升子序列</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#代码-5"><span class="toc-text">代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#优化"><span class="toc-text">优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#深入"><span class="toc-text">深入</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#376-摆动序列"><span class="toc-text">376 摆动序列</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#思路-5"><span class="toc-text">思路</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </div><div class="post-content"><h1 id="abstract"><a href="#abstract" class="headerlink" title="abstract"></a>abstract</h1><p>首先解释动态规划的两种写法和三个概念，随后用简单的题解来解释动态规划的基本原理。</p>
+<h1 id="Dynamic-Programming"><a href="#Dynamic-Programming" class="headerlink" title="Dynamic Programming"></a>Dynamic Programming</h1><h2 id="两种写法"><a href="#两种写法" class="headerlink" title="两种写法"></a>两种写法</h2><p>一开始，最基本的思路一般是暴力搜索（递归），从中发现重叠子问题，随后通过维护数据结构避免重复计算，此时即实现自顶向下的记忆化搜索。通过刚才的方法即可推导出动态规划。<br>动态规划最重要的有两点，状态的定义和状态转移方程。这两点确定了剩下的只是简单的编码（一般是几重循环）。<br>实际编码中，状态定义后数据结构可以进行化简，如背包问题和打家劫舍问题，只需要常数个变量即可。</p>
+<h4 id="递归"><a href="#递归" class="headerlink" title="递归"></a>递归</h4><p>自顶向下，如对斐波那契数列的简化</p>
+<h4 id="递推"><a href="#递推" class="headerlink" title="递推"></a>递推</h4><p>自底向上，如数塔问题的优化解</p>
+<h2 id="三个概念"><a href="#三个概念" class="headerlink" title="三个概念"></a>三个概念</h2><p>用来思考解决新的dp问题的基础</p>
+<h4 id="重叠子问题"><a href="#重叠子问题" class="headerlink" title="重叠子问题"></a>重叠子问题</h4><p>一个问题可以分解为若干的子问题，且这些子问题有重叠的部分。</p>
+<h4 id="最优子结构"><a href="#最优子结构" class="headerlink" title="最优子结构"></a>最优子结构</h4><p>一个问题的解可以由其子问题的解得到。（子问题的最优决策导出原问题的最优决策）</p>
+<h4 id="无后效性"><a href="#无后效性" class="headerlink" title="无后效性"></a>无后效性</h4><p>子问题的解可由之前得到的子问题的解确定，而不依赖于之后还未解决的子问题。也就是说，前边影响后边，反之不成立。如未来可以看作现在关于过去的函数。</p>
+<h2 id="理解"><a href="#理解" class="headerlink" title="理解"></a>理解</h2><p>dp 实际上就是通过记录（维护若干数据结构）来避免重复求解重叠子问题。（空间换时间）这么做的前提是该问题有最优子结构，且无后效性。</p>
+<h1 id="题解思考与记录"><a href="#题解思考与记录" class="headerlink" title="题解思考与记录"></a>题解思考与记录</h1><h2 id="343"><a href="#343" class="headerlink" title="343"></a>343</h2><p>1.DP：<code>dp[n]=max(i*dp[n-i],i*(n-i))(其中i从1到n-1)</code><br>边界条件是dp[2]=0,dp[3]=2;<br>2.数学推导，由基本不等式知，n个数的算术平均数大于等于它们的几何平均数且当且仅当各个数字相等时取等。为此设要分成的数字是x，f(x)=x^(n/x)，对其求导求得x=e时取最大，故取3；然后直接计算pow即可。注意到递归求解pow需要的时间复杂度为O(LogN)（主成分定理根据递归表达式可求得），O（logN)空间复杂度，。<br>另外附一个非递归实现pow</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>,<span class="title">class</span> <span class="title">Integer</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">T</span> <span class="title">power</span>(<span class="title">T</span> <span class="title">x</span>,<span class="title">Integer</span> <span class="title">n</span>)</span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">if</span>(n == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span>(n == <span class="number">1</span>) <span class="keyword">return</span> x;</span><br><span class="line">    <span class="keyword">while</span>((n&amp;<span class="number">1</span>) == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        x = x*x;</span><br><span class="line">        n &gt;&gt;= <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    T result = x;</span><br><span class="line">    n &gt;&gt;= <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span>(n != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        x = x*x;</span><br><span class="line">        <span class="keyword">if</span>((n&amp;<span class="number">1</span>) != <span class="number">0</span>)</span><br><span class="line">            result *= x;</span><br><span class="line">        n &gt;&gt;= <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="279"><a href="#279" class="headerlink" title="279"></a>279</h2><p>1.dp<br><code>dp[n] = Min{ dp[n - i*i] + 1 },  n - i*i &gt;=0 &amp;&amp; i &gt;= 1</code><br>我们定义dp[i]为整数i最少能分解成多少个正整数的平方和。那么有，<br><code>dp[i + j * j] = min(dp[i + j * j], dp[i] + 1).</code><br>如果一个数x可以表示为一个任意数a加上一个平方数bｘb，也就是x=a+bｘb，那么能组成这个数x最少的平方数个数，就是能组成a最少的平方数个数加上1（因为b*b已经是平方数了）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">numSquares</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">int</span>[] dp = <span class="keyword">new</span> <span class="keyword">int</span>[n + <span class="number">1</span>];</span><br><span class="line">	<span class="comment">// 将所有非平方数的结果置最大，保证之后比较的时候不被选中</span></span><br><span class="line">	Arrays.fill(dp, Integer.MAX_VALUE);</span><br><span class="line">	<span class="comment">// 将所有平方数的结果置1</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i * i &lt;= n; i++) &#123;</span><br><span class="line">		dp[i * i] = <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 从小到大找任意数a</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> a = <span class="number">0</span>; a &lt;= n; a++) &#123;</span><br><span class="line">		<span class="comment">// 从小到大找平方数bｘb</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> b = <span class="number">0</span>; a + b * b &lt;= n; b++) &#123;</span><br><span class="line">			<span class="comment">// 因为a+b*b可能本身就是平方数，所以我们要取两个中较小的</span></span><br><span class="line">			dp[a + b * b] = Math.min(dp[a] + <span class="number">1</span>, dp[a + b * b]);</span><br><span class="line">			System.out.println(a + b * b + <span class="string">":--"</span> + Arrays.toString(dp));</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> dp[n];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>2.数学解法<br>![公式]](/img/15539558523343.jpg)<br>根据四平方和定理，任意一个正整数均可表示为4个整数的平方和，其实是可以表示为4个以内的平方数之和，那么就是说返回结果只有1,2,3或4其中的一个，首先我们将数字化简一下，由于一个数如果含有因子4，那么我们可以把4都去掉，并不影响结果，比如2和8,3和12等等，返回的结果都相同，如果一个数除以8余7的话，那么肯定是由4个完全平方数组成。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">numSquares</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">while</span> (n % <span class="number">4</span> == <span class="number">0</span>) n /= <span class="number">4</span>;</span><br><span class="line">		<span class="keyword">if</span> (n % <span class="number">8</span> == <span class="number">7</span>) <span class="keyword">return</span> <span class="number">4</span>;</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> a = <span class="number">0</span>; a * a &lt; n; a++) &#123;</span><br><span class="line">			<span class="keyword">for</span> (<span class="keyword">int</span> b = <span class="number">0</span>; b * b &lt;= n - a * a; b++) &#123;</span><br><span class="line">				<span class="keyword">if</span> (a * a + b * b == n) &#123;</span><br><span class="line">					<span class="keyword">return</span> (a &gt; <span class="number">0</span> ? <span class="number">1</span> : <span class="number">0</span>) + (b &gt; <span class="number">0</span> ? <span class="number">1</span> : <span class="number">0</span>);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">3</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="509"><a href="#509" class="headerlink" title="509"></a>509</h2><h3 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h3><p>最简单的记忆化搜索代替递归，注意从0开始，故new一个n+1长的dp数组。</p>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">fib</span><span class="params">(<span class="keyword">int</span> N)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//注意从0开始，输入N，则有n+1项，故dp长度为n+1</span></span><br><span class="line">        <span class="keyword">int</span>[] dp=<span class="keyword">new</span> <span class="keyword">int</span>[N+<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">if</span>(N&lt;=<span class="number">1</span>)</span><br><span class="line">            <span class="keyword">return</span> N;</span><br><span class="line">        dp[<span class="number">0</span>]=<span class="number">0</span>;</span><br><span class="line">        dp[<span class="number">1</span>]=<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">2</span>;i&lt;=N;i++)</span><br><span class="line">        &#123;</span><br><span class="line">            dp[i]=dp[i<span class="number">-1</span>]+dp[i<span class="number">-2</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[N];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="70-爬楼梯"><a href="#70-爬楼梯" class="headerlink" title="70 爬楼梯"></a>70 爬楼梯</h2><h3 id="思路-1"><a href="#思路-1" class="headerlink" title="思路"></a>思路</h3><p>要爬n阶楼梯，每次只能走一步或者两步，那么最终结果就分两种：从n-1阶走上来和从n-2阶走上来，由此得递推公式：<code>dp[n]=dp[n-1]+dp[n-2]</code>,注意到index存在n-2，故0，1需要特殊考虑。</p>
+<h3 id="代码-1"><a href="#代码-1" class="headerlink" title="代码"></a>代码</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">climbStairs</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(n==<span class="number">1</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">         <span class="keyword">int</span> dp[]=<span class="keyword">new</span> <span class="keyword">int</span>[n+<span class="number">1</span>];</span><br><span class="line">        dp[<span class="number">0</span>]=<span class="number">1</span>;<span class="comment">//为使index=2时符合递推</span></span><br><span class="line">        dp[<span class="number">1</span>]=<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">2</span>;i&lt;=n;i++)&#123;</span><br><span class="line">            dp[i]=dp[i-<span class="number">1</span>]+dp[i-<span class="number">2</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="746"><a href="#746" class="headerlink" title="746"></a>746</h2><h3 id="思路-2"><a href="#思路-2" class="headerlink" title="思路"></a>思路</h3><p>题目有一个坑点（根据正确解答推断出），数组下标从0开始，但是楼梯层数默认从1开始，这里要对应。<br>和上一题一样，到n层的最少花费只需要考虑从n-1层或者n-2层来加上n层的即可<code>dp[i]=Math.min(dp[i-1],dp[i-2])+cost[i];</code>。边界条件是<code>dp[i]=cost[i],i=1或者2</code>。</p>
+<h3 id="代码-2"><a href="#代码-2" class="headerlink" title="代码"></a>代码</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">minCostClimbingStairs</span><span class="params">(<span class="keyword">int</span>[] cost)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> len=cost.length;</span><br><span class="line">        <span class="keyword">int</span> dp[]=<span class="keyword">new</span> <span class="keyword">int</span>[len];</span><br><span class="line">        <span class="keyword">if</span>(len==<span class="number">1</span>)</span><br><span class="line">            <span class="keyword">return</span> cost[<span class="number">0</span>];</span><br><span class="line">        dp[<span class="number">0</span>]=cost[<span class="number">0</span>];</span><br><span class="line">        dp[<span class="number">1</span>]=cost[<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">2</span>;i&lt;len;i++)&#123;</span><br><span class="line">            dp[i]=Math.min(dp[i-<span class="number">1</span>],dp[i-<span class="number">2</span>])+cost[i];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//1,1,2,3,3,103,4,5,104,6</span></span><br><span class="line">        <span class="comment">//0,0,1,1-&gt;0,0,1,1</span></span><br><span class="line">        <span class="comment">//0,1,1,0-&gt;0,1,1,1</span></span><br><span class="line">        <span class="comment">//0,0,0,1-&gt;0,0,0,0,到倒数第二层时仍可选择上两层</span></span><br><span class="line">        <span class="keyword">return</span> Math.min(dp[len-<span class="number">1</span>],dp[len-<span class="number">2</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="91-解码方法"><a href="#91-解码方法" class="headerlink" title="91 解码方法"></a>91 解码方法</h2><h3 id="思路-3"><a href="#思路-3" class="headerlink" title="思路"></a>思路</h3><p>类似fib数列和爬楼梯，只是dp[n-1]不需加上，比如11，第二位解为单位字母A并不增加个数，只有dp[n-2]才会额外增加。此时的条件是数字在1～26之间。<br>一开始有一点疑惑，会不会有重叠？其实不会，因为这是子问题，不同的子问题之间（这里是dp[n-2]和dp[n-1]）是不同的问题，前边方法可能是重叠的，但因为问题不同，结果也就不会重叠。</p>
+<h3 id="代码-3"><a href="#代码-3" class="headerlink" title="代码"></a>代码</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">numDecodings</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (s.isEmpty() || (s.length() &gt; <span class="number">1</span> &amp;&amp; s.charAt(<span class="number">0</span>) == <span class="string">'0'</span>)) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span>[] dp = <span class="keyword">new</span> <span class="keyword">int</span>[s.length() + <span class="number">1</span>];</span><br><span class="line">        dp[<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; dp.length; ++i) &#123;</span><br><span class="line">            dp[i] = (s.charAt(i - <span class="number">1</span>) == <span class="string">'0'</span>) ? <span class="number">0</span> : dp[i - <span class="number">1</span>];</span><br><span class="line">            <span class="keyword">if</span> (i &gt; <span class="number">1</span> &amp;&amp; (s.charAt(i - <span class="number">2</span>) == <span class="string">'1'</span> || (s.charAt(i - <span class="number">2</span>) == <span class="string">'2'</span> &amp;&amp; s.charAt(i - <span class="number">1</span>) &lt;= <span class="string">'6'</span>))) &#123;</span><br><span class="line">                dp[i] += dp[i - <span class="number">2</span>];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[s.length()];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="62-机器人-不同路径"><a href="#62-机器人-不同路径" class="headerlink" title="62 机器人 不同路径"></a>62 机器人 不同路径</h2><h3 id="思路-4"><a href="#思路-4" class="headerlink" title="思路"></a>思路</h3><p>和爬楼梯一样，那里的一部or两部to这里的向下或者向右走，这是最基本的动态规划解法。还有数学解法，机器人一定会走m+n-2步，即从m+n-2中挑出m-1步向下走即可。</p>
+<h3 id="代码-4"><a href="#代码-4" class="headerlink" title="代码"></a>代码</h3><p>dp</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">uniquePaths</span><span class="params">(<span class="keyword">int</span> m, <span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span>[][] dp=<span class="keyword">new</span> <span class="keyword">int</span>[m][n];</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;m;i++)</span><br><span class="line">            dp[i][<span class="number">0</span>]=<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;n;i++)</span><br><span class="line">            dp[<span class="number">0</span>][i]=<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>;i&lt;m;i++)</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">1</span>;j&lt;n;j++)</span><br><span class="line">                dp[i][j]=dp[i-<span class="number">1</span>][j]+dp[i][j-<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">return</span> dp[m-<span class="number">1</span>][n-<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>数学解法（java报超时了）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">uniquePaths</span><span class="params">(<span class="keyword">int</span> m, <span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">double</span> num = <span class="number">1</span>, denom = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">int</span> small = m &gt; n ? n : m;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= small - <span class="number">1</span>; ++i) &#123;</span><br><span class="line">            num *= m + n - <span class="number">1</span> - i;</span><br><span class="line">            denom *= i;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> (<span class="keyword">int</span>)(num / denom);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="300-LIS-最长上升子序列"><a href="#300-LIS-最长上升子序列" class="headerlink" title="300 LIS 最长上升子序列"></a>300 LIS 最长上升子序列</h2><p>###思路<br>最蠢的办法当然是枚举所有的子序列并判断是否上升，但从中很容易发现重复计算（也即重叠子问题：i<del>j的部分一旦算好了，i</del>j+1的部分就不必从头算起。也就是说，存在重叠子问题，且满足最优子结构，即上边说的原问题的解可由其部分解推出。由此可得状态转移方程<code>dp[i]=nums[i]&gt;nums[i-1]?dp[i-1]+1:0,i&gt;1&amp;&amp;i&lt;nums.length</code>,边界条件为<code>dp[0]=0;</code><br>稍微一试发现很蠢，只考虑了之前一个数（应该考虑之前所有的数字，没考虑到的原因是停留在之前某个题状态，也没有手动算一下），实际上应该考虑i之前所有的情况，故更新状态转移方程为<br><code>dp[i]=max(dp[j]+(nums[i]&gt;nums[j]?1:0),dp[i]),0&lt;i&lt;nums.length</code></p>
+<h3 id="代码-5"><a href="#代码-5" class="headerlink" title="代码"></a>代码</h3><p>出现了两个问题，一是选择运算符的优先级，二是代码中注释问题，如下。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">lengthOfLIS</span><span class="params">(<span class="keyword">int</span>[] nums)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span>[] dp=<span class="keyword">new</span> <span class="keyword">int</span>[nums.length];</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;nums.length;i++)&#123;</span><br><span class="line">            dp[i]=<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;nums.length;i++)&#123;</span><br><span class="line">            <span class="keyword">int</span> max=<span class="number">1</span>;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> j=<span class="number">0</span>;j&lt;i;j++)&#123;</span><br><span class="line">                <span class="comment">//dp[i]=Math.max(dp[i],dp[j]+(nums[i]&gt;nums[j]?1:0));</span></span><br><span class="line">                <span class="keyword">if</span>(nums[i]&gt;nums[j])</span><br><span class="line">                    <span class="comment">//max=Math.max(dp[i],dp[j]+1);</span></span><br><span class="line">                    <span class="comment">//这里max的第一个变量不应该是dp[i]，因为最大的变量始终记录在max中</span></span><br><span class="line">                    <span class="comment">//也就是说，对于max中包含迭代变量的，需要一个max_flag来记录</span></span><br><span class="line">                    max=Math.max(max,dp[j]+<span class="number">1</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            dp[i]=max;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">int</span> ans=<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;nums.length;i++)&#123;</span><br><span class="line">            ans=Math.max(ans,dp[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h3><p>上述问题的时间复杂度在O(n^2），<strong>可以通过一些二分查找优化到O(n*logn)</strong><br><strong>也可以通过树状数组优化</strong><a href="https://www.cnblogs.com/acmsong/p/7231069.html" target="_blank" rel="noopener">https://www.cnblogs.com/acmsong/p/7231069.html</a></p>
+<h3 id="深入"><a href="#深入" class="headerlink" title="深入"></a>深入</h3><p>如果要找出这个LIS，应该怎么办？</p>
+<h2 id="376-摆动序列"><a href="#376-摆动序列" class="headerlink" title="376 摆动序列"></a>376 摆动序列</h2><h3 id="思路-5"><a href="#思路-5" class="headerlink" title="思路"></a>思路</h3><p>和LIS问题一样，避免了枚举这种愚蠢且<strong>错误</strong>的方法，而是考虑已经解决i～j范围的问题，则i～j+1的问题答案可得出（思路和LIS一样），由此得到状态转移方程为<code>dp[i]=max(dp[i],dp[j]+(nums[i]-nums[....</code>注意到dp[j]+后边的判断需要记录之前的是增是减，故此种方法需要结构体（内部类）对这个信息进行储存，故优先考虑别的方法，在下一篇文章中给出解答。</p>
+
+      </div>
+      <div class="post-copyright">
+    <p class="copyright-item">
+      <span>Author: </span>
+      <a href="http://yoursite.com">Adam Ubik</a>
+    </p>
+    <p class="copyright-item">
+      <span>Link: </span>
+      <a href="http://yoursite.com/2019/03/02/2019-01-01-Dynamic_Programming%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/">http://yoursite.com/2019/03/02/2019-01-01-Dynamic_Programming%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/</a>
+    </p>
+    <p class="copyright-item">
+      <span>License: </span><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>
+            <a href="/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/">动态规划</a>
+            <a href="/tags/%E9%A2%98%E8%A7%A3/">题解</a>
+            </div>
+        
+        <nav class="post-nav"><a class="prev" href="/2019/03/13/2019-07-17-%E5%B9%82%E7%AD%89%E6%80%A7%E7%9A%84%E6%8E%A2%E7%B4%A2/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">幂等性解决方案初探</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    <a class="next" href="/2019/02/15/2019-06-23-%E7%BC%93%E5%AD%98&%E7%BC%93%E5%AD%98%E8%A1%8C%E4%B8%8E%E5%A1%AB%E5%85%85/">
+        <span class="next-text nav-default">缓存行与性能问题</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:Dingbiao1998@icloud.com" target="_blank" rel="noopener" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/Ubique0305" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2018 - 2019<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Adam Ubik</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>

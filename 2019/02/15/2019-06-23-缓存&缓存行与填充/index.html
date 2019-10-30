@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="缓存行与性能问题"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/default" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="http://yoursite.com/2019/02/15/2019-06-23-缓存&缓存行与填充/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" /><script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":true};
+</script>
+
+    <title>缓存行与性能问题 - Ubik's blog</title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Ubik's blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">Home
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">Archives
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Ubik's blog</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            Home
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            Archives
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            Tags
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            About
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">缓存行与性能问题
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-02-15
+        </span></div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">Contents</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#abstract"><span class="toc-text">abstract</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#缓存"><span class="toc-text">缓存</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#缓存存在的条件——局部性"><span class="toc-text">缓存存在的条件——局部性</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#缓存行"><span class="toc-text">缓存行</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#伪共享"><span class="toc-text">伪共享</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#解决办法"><span class="toc-text">解决办法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#应用场景"><span class="toc-text">应用场景</span></a></li></ol>
+    </div>
+  </div><div class="post-content"><h1 id="abstract"><a href="#abstract" class="headerlink" title="abstract"></a>abstract</h1><p>利用局部性原理提高 IO 速度，但因多核处理器共享 L3 级缓存，多进程读写 L3 时，一个 L3 缓存的最小单位（也即缓存行）存在多个进程的数据，造成缓存刷新并刷掉了本属于别的进程的、不该刷掉的数据，反而会造成性能下降。<br> 既然原因已知，解决就很简单（Java 中也是这么做的），一句话：缓存行对齐来避免多线程访问同一缓存时内存屏障导致的缓存失效带来的性能下降”。</p>
+<h1 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h1><p>计算机中不同缓存介质的速度差距很大，具体速度如上，<br><img src="/img/E1BFEBD4C0F5448731A2FE434868F2B9.jpg" alt="插图"><br>为了弥补内存和 CPU 之间巨大的性能差距，计算机设置了三级缓存。利用局部性原理（本质上是概率，简单来说就是更常用的数据分配更快的存储介质/访问速度）避免 cpu 等待 I/O 时间过长。不同的存储访问速度不同，寄存器只需一个周期，缓存上需要1-30个周期，主存上需要50-200个周期，磁盘上需要几千万个周期。<code>ls /sys/devices/system/cpu/cpu0/cache/index0</code>命令可以查看 Cache 信息，你甚至可以通过 Java 语言获取，如下所示：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> CacheNotFoundException </span>&#123;</span><br><span class="line">        CacheInfo info = CacheInfo.getInstance(); </span><br><span class="line">        CacheLevelInfo l1Datainf = info.getCacheInformation(CacheLevel.L1, CacheType.DATA_CACHE);</span><br><span class="line">        System.out.println(<span class="string">"第一级数据缓存信息："</span>+l1Datainf.toString());</span><br><span class="line"> </span><br><span class="line">        CacheLevelInfo l1Instrinf = info.getCacheInformation(CacheLevel.L1, CacheType.INSTRUCTION_CACHE);</span><br><span class="line">        System.out.println(<span class="string">"第一级指令缓存信息："</span>+l1Instrinf.toString());</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/img/49424FD07BE48905B1082BC01A05F6B1.jpg" alt="插图"></p>
+<p><img src="/img/B4B570F52AEB1A103CE03AEFE4E27D82.jpg" alt="插图"></p>
+<h1 id="缓存存在的条件——局部性"><a href="#缓存存在的条件——局部性" class="headerlink" title="缓存存在的条件——局部性"></a>缓存存在的条件——局部性</h1><p>局部性包括时间局部性、空间局部性。时间局部性：对于同一数据可能被多次使用，自第一次加载到 <code>Cache Line</code> 后，后面的访问就可以多次从 <code>Cache Line</code> 中命中，从而提高读取速度（而不是从下层缓存读取）。空间局部性：一个 <code>Cache Line</code> 有 64 字节块，我们可以充分利用一次加载 64 字节的空间，把程序后续会访问的数据，一次性全部加载进来，从而提高 <code>Cache Line</code>命中率（而不是重新去寻址读取）。</p>
+<h1 id="缓存行"><a href="#缓存行" class="headerlink" title="缓存行"></a>缓存行</h1><p>在存储和计算速度都在快速增长的同时，计算机的处理器内核数量也在增加，每个处理器包括多个核，每个核包含寄存器、L1、L2 缓存，一个处理器的多个核共享 L3 缓存。<br>这就引出了缓存行与伪共享问题：</p>
+<blockquote>
+<p> 缓存行 (Cache Line) 是 CPU Cache 中的最小单位，CPU Cache 由若干缓存行组成，一个缓存行的大小通常是 64 字节（这取决于 CPU），并且它有效地引用主内存中的一块地址。一个 Java 的 long 类型是 8 字节，因此在一个缓存行中可以存 8 个 long 类型的变量。</p>
+</blockquote>
+<h1 id="伪共享"><a href="#伪共享" class="headerlink" title="伪共享"></a>伪共享</h1><p>伪共享是并发程序的性能杀手，是指多个线程同时读写同一个缓存行的不同变量导致的 CPU 缓存失效，也就是说这个缓存行在不同的线程间多次通过L3缓存来交换最新的拷贝数据，尽管变量之间没有任何关系，但由于在主内存中临近，存在于同一缓存行，其相互覆盖会导致频繁的缓存未命中，引发性能下降</p>
+<h1 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h1><p>通过字节填充解决，使用多余字节填充 <code>CacheLine</code> 来保证不同线程变量存在于不同的 <code>CacheLine</code>，通过增大数组间隔使得不同线程的元素位于不同的 <code>CacheLine</code> 上。<br>Java8 中提供的实现如下，注意，jvm需要添加参数  <code>-XX:-RestrictContended</code>才能开启此功能 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">  <span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line">  <span class="meta">@Target</span>(&#123;ElementType.FIELD, ElementType.TYPE&#125;)</span><br><span class="line">  <span class="keyword">public</span> <span class="meta">@interface</span> Contended &#123;</span><br><span class="line">      <span class="function">String <span class="title">value</span><span class="params">()</span> <span class="keyword">default</span> ""</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用方法如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 类前加上代表整个类的每个变量都会在单独的cache line中</span></span><br><span class="line"><span class="meta">@sun</span>.misc.Contended</span><br><span class="line"><span class="meta">@SuppressWarnings</span>(<span class="string">"restriction"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ContendedData</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> value;</span><br><span class="line">    <span class="keyword">long</span> modifyTime;</span><br><span class="line">    <span class="keyword">boolean</span> flag;</span><br><span class="line">    <span class="keyword">long</span> createTime;</span><br><span class="line">    <span class="keyword">char</span> key;</span><br><span class="line">&#125;</span><br><span class="line">或者这种：</span><br><span class="line"><span class="comment">// 属性前加上时需要加上组标签</span></span><br><span class="line"><span class="meta">@SuppressWarnings</span>(<span class="string">"restriction"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ContendedGroupData</span> </span>&#123;</span><br><span class="line">    <span class="meta">@sun</span>.misc.Contended(<span class="string">"group1"</span>)</span><br><span class="line">    <span class="keyword">int</span> value;</span><br><span class="line">    <span class="meta">@sun</span>.misc.Contended(<span class="string">"group1"</span>)</span><br><span class="line">    <span class="keyword">long</span> modifyTime;</span><br><span class="line">    <span class="meta">@sun</span>.misc.Contended(<span class="string">"group2"</span>)</span><br><span class="line">    <span class="keyword">boolean</span> flag;</span><br><span class="line">    <span class="meta">@sun</span>.misc.Contended(<span class="string">"group3"</span>)</span><br><span class="line">    <span class="keyword">long</span> createTime;</span><br><span class="line">    <span class="meta">@sun</span>.misc.Contended(<span class="string">"group3"</span>)</span><br><span class="line">    <span class="keyword">char</span> key;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h1><ol>
+<li>JDK1.8 <code>ConcurrentHashMap</code> 中， 通过 <code>@sun.misc.Contended</code> 避免伪共享<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* ---------------- Counter support -------------- */</span></span><br><span class="line"> </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * A padded cell for distributing counts.  Adapted from LongAdder</span></span><br><span class="line"><span class="comment">     * and Striped64.  See their internal docs for explanation.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">  <span class="meta">@sun</span>.misc.Contended <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">CounterCell</span> </span>&#123;</span><br><span class="line">        <span class="keyword">volatile</span> <span class="keyword">long</span> value;</span><br><span class="line">        CounterCell(<span class="keyword">long</span> x) &#123; value = x; &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></li>
+<li>JDK1.8 Thread<br>为了确保生成随机数时不会产生 false sharing，把产生随机数的三个值设置为独占 CacheLile<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">（openjdk\jdk\src\share\classes\java\lang\Thread.java line:<span class="number">2023</span>）</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// The following three initially uninitialized fields are exclusively</span></span><br><span class="line">    <span class="comment">// managed by class java.util.concurrent.ThreadLocalRandom. These</span></span><br><span class="line">    <span class="comment">// fields are used to build the high-performance PRNGs in the</span></span><br><span class="line">    <span class="comment">// concurrent code, and we can not risk accidental false sharing.</span></span><br><span class="line">    <span class="comment">// Hence, the fields are isolated with @Contended.</span></span><br><span class="line"> </span><br><span class="line">    <span class="comment">/** The current seed for a ThreadLocalRandom */</span></span><br><span class="line">    <span class="meta">@sun</span>.misc.Contended(<span class="string">"tlr"</span>)</span><br><span class="line">    <span class="keyword">long</span> threadLocalRandomSeed;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">/** Probe hash value; nonzero if threadLocalRandomSeed initialized */</span></span><br><span class="line">    <span class="meta">@sun</span>.misc.Contended(<span class="string">"tlr"</span>)</span><br><span class="line">    <span class="keyword">int</span> threadLocalRandomProbe;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">/** Secondary seed isolated from public ThreadLocalRandom sequence */</span></span><br><span class="line">    <span class="meta">@sun</span>.misc.Contended(<span class="string">"tlr"</span>)</span><br><span class="line">    <span class="keyword">int</span> threadLocalRandomSecondarySeed;</span><br></pre></td></tr></table></figure></li>
+<li>Disruptor 框架中的 RingBuffer 数据结构<br>使用字节填充和继承的方式来避免伪共享。</li>
+<li>数组比链表、树更具有缓存友好性<br>内存地址是连续的数组（利用空间局部性），能一次被 L1 缓存加载完成。长度为 16 的 row 和 column 数组，在 <code>Cache Line</code> 64 字节数据块上内存地址是连续的，能被一次加载到 Cache Line 中，所以在访问数组时，<code>Cache Line</code> 命中率高，性能发挥到极致<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">run</span><span class="params">(<span class="keyword">int</span>[] row, <span class="keyword">int</span>[] column)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">16</span>; i++ ) &#123;</span><br><span class="line">        sum += row[i] * column[i];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+
+      </div>
+      <div class="post-copyright">
+    <p class="copyright-item">
+      <span>Author: </span>
+      <a href="http://yoursite.com">Adam Ubik</a>
+    </p>
+    <p class="copyright-item">
+      <span>Link: </span>
+      <a href="http://yoursite.com/2019/02/15/2019-06-23-%E7%BC%93%E5%AD%98&%E7%BC%93%E5%AD%98%E8%A1%8C%E4%B8%8E%E5%A1%AB%E5%85%85/">http://yoursite.com/2019/02/15/2019-06-23-%E7%BC%93%E5%AD%98&%E7%BC%93%E5%AD%98%E8%A1%8C%E4%B8%8E%E5%A1%AB%E5%85%85/</a>
+    </p>
+    <p class="copyright-item">
+      <span>License: </span><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/%E5%B9%B6%E5%8F%91/">并发</a>
+            <a href="/tags/%E7%BC%93%E5%AD%98/">缓存</a>
+            </div>
+        
+        <nav class="post-nav"><a class="prev" href="/2019/03/02/2019-01-01-Dynamic_Programming%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">动态规划-入门篇</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:Dingbiao1998@icloud.com" target="_blank" rel="noopener" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/Ubique0305" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2018 - 2019<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Adam Ubik</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>

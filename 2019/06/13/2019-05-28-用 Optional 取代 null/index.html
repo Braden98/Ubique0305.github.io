@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="用 Optional 取代 null 的思考"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/default" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="http://yoursite.com/2019/06/13/2019-05-28-用 Optional 取代 null/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" /><script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":true};
+</script>
+
+    <title>用 Optional 取代 null 的思考 - Ubik's blog</title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Ubik's blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">Home
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">Archives
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Ubik's blog</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            Home
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            Archives
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            Tags
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            About
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">用 Optional 取代 null 的思考
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-06-13
+        </span></div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">Contents</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#空指针异常"><span class="toc-text">空指针异常</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#创建-Optional-对象"><span class="toc-text">创建 Optional 对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用-map-从-Optional-对象中提取和转换值"><span class="toc-text">使用 map 从 Optional 对象中提取和转换值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用-flatMap-链接-Optional-对象"><span class="toc-text">使用 flatMap 链接 Optional 对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#无法序列化的-Optional"><span class="toc-text">无法序列化的 Optional</span></a></li></ol></li></ol>
+    </div>
+  </div><div class="post-content"><h1 id="空指针异常"><a href="#空指针异常" class="headerlink" title="空指针异常"></a>空指针异常</h1><p>空指针异常 <code>NullPointerExpection</code> 是在 Java 开发过程中常见的异常，当我们访问数组中超过其长度-1的 Index 时，或者对 null 进行<code>.</code>运算时都会引发这个异常。一般来说，可以通过防御式检查<code>if(Object != null</code>来减少之。但很明显，这种方式牺牲了可读性，而且因为逐层潜嵌套，降低了可扩展性。而为了避免逐层嵌套使用多个返回值，那么可维护性就降低了。<br>实际上，空指针及对它的预防都有很多问题。</p>
+<ul>
+<li><p>它代表的是在静态类型语言中以一种错误的方式对缺失变量值的建模，本身没有任何意义。</p>
+</li>
+<li><p>它会使代码膨胀</p>
+</li>
+<li><p>Java一直试图避免让程序员意识到指针的存在，唯一的例外是：null指针</p>
+</li>
+<li><p>null并不属于任何类型， 这意味着它可以被赋值给任意引用类型的变量。这会导致问题，原因是当这个变量被传递到系统中的另一个部分后，你将无法获知这个null变量最初的赋值到底是什么类型。</p>
+</li>
+</ul>
+<p>在 Java8 中提供了 Option 类来解决这个问题。————当你知道类中某个属性可能为 null 时，采用  <code>Optional&lt;class&gt;</code> 来代替 <code>class</code>.这样，从静态代码的角度，我们至少可以知道哪些值可为 null，哪些不可，方便我们排查错误。</p>
+<p>官方文档描述如下</p>
+<blockquote>
+<p>A container object which may or may not contain a non-null value. If a value is present, isPresent() will return true and get() will return the value.</p>
+</blockquote>
+<p>那么，Optional 和 null 到底有什么区别呢？实际上，变量存在时， Optional类只是对类简单封装。变量不存在时， 缺失的值会被建模成一个“空”的Optional对象，由方法 <code>Optional.empty()</code> 返回。<code>Optional.empty()</code> 方法是一个静态工厂方法，它返回 Optional 类的特定单一实例。你可能还有疑问，null 引用和 <code>Optional.empty()</code> 有什么本?的区别吗？从语义上， 你可以把它们当作一回事儿， 但是实际中它们之间的差别非常大 ： 如果你尝试解引用一个 null ， 一 定 会 触发 NullPointerException ，不过使用 <code>Optional.empty()</code> 就完全没事，它是 Optional 类的一个有效对象，多种场景都能调用，非常有用。</p>
+<h2 id="创建-Optional-对象"><a href="#创建-Optional-对象" class="headerlink" title="创建 Optional 对象"></a>创建 Optional 对象</h2><ol>
+<li><p>声明一个空的 Optional<br><code>Optional&lt;Car&gt; optCar = Optional.empty();</code></p>
+</li>
+<li><p>依据一个非空值创建 Optional<br><code>Optional&lt;Car&gt; optCar = Optional.of(car);</code></p>
+</li>
+<li><p>创建可接受null的Optional</p>
+<p> <code>Optional&lt;Car&gt; optCar = Optional.ofNullable(car);</code></p>
+</li>
+</ol>
+<h2 id="使用-map-从-Optional-对象中提取和转换值"><a href="#使用-map-从-Optional-对象中提取和转换值" class="headerlink" title="使用 map 从 Optional 对象中提取和转换值"></a>使用 map 从 Optional 对象中提取和转换值</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Optional&lt;String&gt; name =</span><br><span class="line">optInsurance.map(Insurance::getName;</span><br></pre></td></tr></table></figure>
+<h2 id="使用-flatMap-链接-Optional-对象"><a href="#使用-flatMap-链接-Optional-对象" class="headerlink" title="使用 flatMap 链接 Optional 对象"></a>使用 flatMap 链接 Optional 对象</h2><p>链式调用 map() 根本无法通过编译，原因是 Optional 发生了嵌套，可以使用 flatMap 完成.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">person.flatMap(Person::getCar)  </span><br><span class="line">.flatMap(Car::getInsurance)  </span><br><span class="line">.map(Insurance::getName) </span><br><span class="line">.orElse(<span class="string">"Unknown"</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="无法序列化的-Optional"><a href="#无法序列化的-Optional" class="headerlink" title="无法序列化的 Optional"></a>无法序列化的 Optional</h2><p>Java??的架构师 Brian Goetz曾 经非常明确地说过，Optional的设计初衷仅仅是要支持能返回Optional对象的语法，所以它也并未实现Serializable接口，如果你一定要实现序列化的模型，可以这样做</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;    </span><br><span class="line">    <span class="keyword">private</span> Car car;  </span><br><span class="line">    <span class="function"><span class="keyword">public</span> Optional&lt;Car&gt; <span class="title">getCarAsOptional</span><span class="params">()</span> </span>&#123;        </span><br><span class="line">        <span class="keyword">return</span> Optional.ofNullable(car);  </span><br><span class="line">  &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      </div>
+      <div class="post-copyright">
+    <p class="copyright-item">
+      <span>Author: </span>
+      <a href="http://yoursite.com">Adam Ubik</a>
+    </p>
+    <p class="copyright-item">
+      <span>Link: </span>
+      <a href="http://yoursite.com/2019/06/13/2019-05-28-%E7%94%A8%20Optional%20%E5%8F%96%E4%BB%A3%20null/">http://yoursite.com/2019/06/13/2019-05-28-%E7%94%A8%20Optional%20%E5%8F%96%E4%BB%A3%20null/</a>
+    </p>
+    <p class="copyright-item">
+      <span>License: </span><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/Java/">Java</a>
+            <a href="/tags/%E5%BC%82%E5%B8%B8/">异常</a>
+            <a href="/tags/%E9%87%8D%E6%9E%84/">重构</a>
+            </div>
+        
+        <nav class="post-nav"><a class="prev" href="/2019/06/15/2019-05-30-RCU/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">了解并发编程中的RCU</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    <a class="next" href="/2019/06/13/2019-07-04-%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0%E5%8F%8AGET%20Bucket%20(List%20Objects)%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98/">
+        <span class="next-text nav-default">对象存储的优势及实习问题记录</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:Dingbiao1998@icloud.com" target="_blank" rel="noopener" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/Ubique0305" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2018 - 2019<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Adam Ubik</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>

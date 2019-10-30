@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="Golang 学习笔记"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/default" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="http://yoursite.com/2019/06/02/2019-06-13-Go学习笔记/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" /><script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":true};
+</script>
+
+    <title>Golang 学习笔记 - Ubik's blog</title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Ubik's blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">Home
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">Archives
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Ubik's blog</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            Home
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            Archives
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            Tags
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            About
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">Golang 学习笔记
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-06-02
+        </span></div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">Contents</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#反射"><span class="toc-text">反射</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#为什么慢？"><span class="toc-text">为什么慢？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#接口"><span class="toc-text">接口</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#实现"><span class="toc-text">实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#空接口"><span class="toc-text">空接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#接口的内部表现"><span class="toc-text">接口的内部表现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类型断言"><span class="toc-text">类型断言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类型判断"><span class="toc-text">类型判断</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#匿名结构体、匿名类"><span class="toc-text">匿名结构体、匿名类</span></a></li></ol>
+    </div>
+  </div><div class="post-content"><p>Mutex 做匿名字段 相关方法必须 pointer-receiver ，or 因复制导致锁机制失效。<br>（匿名字段，也称嵌入字段，Mutex、接口组合常用，注意方法覆盖问题）</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line">	wg.Add(<span class="number">2</span>)</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">var</span> d data</span><br><span class="line"></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">defer</span> wg.Done()</span><br><span class="line">		d.test(<span class="string">"read"</span>)</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">defer</span> wg.Done()</span><br><span class="line">		d.test(<span class="string">"write"</span>)</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	wg.Wait()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> data <span class="keyword">struct</span> &#123;</span><br><span class="line">	sync.Mutex</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(d *data)</span> <span class="title">test</span> <span class="params">(s <span class="keyword">string</span>)</span></span>&#123;</span><br><span class="line">	d.Lock()</span><br><span class="line">	<span class="keyword">defer</span> d.Unlock()</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i:=<span class="number">0</span>;i&lt;<span class="number">5</span>;i++&#123;</span><br><span class="line">		fmt.Println(s,i)</span><br><span class="line">		time.Sleep(<span class="number">3</span>*time.Second)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>mutex 锁不支持递归，即使在同一gr下也会死锁。</p>
+<h1 id="反射"><a href="#反射" class="headerlink" title="反射"></a>反射</h1><ol>
+<li>反射可以将“接口类型变量”转换为“反射类型对象”。</li>
+</ol>
+<ol start="2">
+<li>反射可以将“反射类型对象”转换为“接口类型变量”。</li>
+<li>如果要修改“反射类型对象”，其值必须是“可写的”。<br>自我描述（self-representation）和监测（examination）。反射机制就是在运行时动态的调用对象的方法和属性，gRPC通过反射实现。</li>
+</ol>
+<p>每个interface变量都有一个对应pair，pair中记录了实际变量的值和类型（value，type）反射就是用来检测存储在接口变量内部(值value；类型concrete type) pair对的一种机制。</p>
+<h2 id="为什么慢？"><a href="#为什么慢？" class="headerlink" title="为什么慢？"></a>为什么慢？</h2><p>Golang reflect慢主要有两个原因</p>
+<p>涉及到内存分配以及后续的GC；</p>
+<p>reflect实现里面有大量的枚举，也就是for循环，比如类型之类的。</p>
+<h1 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h1><p>OO中，接口定义对象的行为；Go中，接口是一组方法签名，当一个类型为接口中所有方法提供定义时，称为实现该接口，与OOP类似，但耦合低，可以通过向上类型转换使编码更一致（函数参数声明为接口，函数定义调用接口方法，具体做什么依赖于运行时传入的实现接口的具体类（当然，Go中是接收该类的方法）。duck typing。</p>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>实现会有运行期开销，最常见于提供包外访问或者预留扩展空间。接口也是一种结构类型，只是编译器加了限制，体现在</p>
+<ol>
+<li>不能由字段</li>
+<li>不能定义自己的方法</li>
+<li>不能实现方法</li>
+<li>可嵌入其他接口<h2 id="空接口"><a href="#空接口" class="headerlink" title="空接口"></a>空接口</h2>由上可知，所有类型都实现了空接口（0个方法），都可以向上转型为空接口类型<h2 id="接口的内部表现"><a href="#接口的内部表现" class="headerlink" title="接口的内部表现"></a>接口的内部表现</h2>（K，V）表示，K是接口的基础类型，V是具体类型的值<h2 id="类型断言"><a href="#类型断言" class="headerlink" title="类型断言"></a>类型断言</h2>类型断言用于提取接口的基础值，语法：i.(T)，如果不接收ok会报错<h2 id="类型判断"><a href="#类型判断" class="headerlink" title="类型判断"></a>类型判断</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">findType</span><span class="params">(i <span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;  </span><br><span class="line">    <span class="keyword">switch</span> i.(<span class="keyword">type</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="keyword">string</span>:</span><br><span class="line">        fmt.Printf(<span class="string">"String: %s\n"</span>, i.(<span class="keyword">string</span>))</span><br><span class="line">    <span class="keyword">case</span> <span class="keyword">int</span>:</span><br><span class="line">        fmt.Printf(<span class="string">"Int: %d\n"</span>, i.(<span class="keyword">int</span>))</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        fmt.Printf(<span class="string">"Unknown type\n"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<p>也可以与接口比较，在case语句里边写点调用接口的方法。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Describer <span class="keyword">interface</span> &#123;  </span><br><span class="line">    Describe()</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> St <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s St)</span> <span class="title">Describe</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    fmt.Println(<span class="string">"被调用le!"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">findType</span><span class="params">(i <span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;  </span><br><span class="line">    <span class="keyword">switch</span> v := i.(<span class="keyword">type</span>) &#123;</span><br><span class="line">    <span class="keyword">case</span> Describer:</span><br><span class="line">        v.Describe()</span><br><span class="line">    <span class="keyword">case</span> <span class="keyword">string</span>:</span><br><span class="line">        fmt.Println(<span class="string">"String 变量"</span>)</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        fmt.Printf(<span class="string">"unknown type\n"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;  </span><br><span class="line">    findType(<span class="string">"Naveen"</span>)</span><br><span class="line">    st := St(<span class="string">"我的字符串"</span>)</span><br><span class="line">    findType(p)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果是接口覆盖了type定义的基本类型string</p>
+<h1 id="匿名结构体、匿名类"><a href="#匿名结构体、匿名类" class="headerlink" title="匿名结构体、匿名类"></a>匿名结构体、匿名类</h1><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">strt := <span class="keyword">struct</span> &#123;</span><br><span class="line">		name <span class="keyword">string</span></span><br><span class="line">	&#125;&#123;</span><br><span class="line">		name: <span class="string">"Naveen R"</span>,</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+
+      </div>
+      <div class="post-copyright">
+    <p class="copyright-item">
+      <span>Author: </span>
+      <a href="http://yoursite.com">Adam Ubik</a>
+    </p>
+    <p class="copyright-item">
+      <span>Link: </span>
+      <a href="http://yoursite.com/2019/06/02/2019-06-13-Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">http://yoursite.com/2019/06/02/2019-06-13-Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</a>
+    </p>
+    <p class="copyright-item">
+      <span>License: </span><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/Golang/">Golang</a>
+            <a href="/tags/%E7%AC%94%E8%AE%B0/">笔记</a>
+            </div>
+        
+        <nav class="post-nav"><a class="prev" href="/2019/06/13/2019-07-04-%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0%E5%8F%8AGET%20Bucket%20(List%20Objects)%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">对象存储的优势及实习问题记录</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    <a class="next" href="/2019/06/02/2019-05-29-%E5%B9%B6%E5%8F%91%E8%AE%A1%E6%95%B0%E5%99%A8/">
+        <span class="next-text nav-default">Java 并发计数器探秘</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:Dingbiao1998@icloud.com" target="_blank" rel="noopener" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/Ubique0305" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2018 - 2019<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Adam Ubik</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>

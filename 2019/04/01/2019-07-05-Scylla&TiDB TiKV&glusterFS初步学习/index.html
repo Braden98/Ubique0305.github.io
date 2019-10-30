@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="Scylla&TiDB TiKV&CQL 入门"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/default" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="http://yoursite.com/2019/04/01/2019-07-05-Scylla&TiDB TiKV&glusterFS初步学习/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" /><script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":true};
+</script>
+
+    <title>Scylla&TiDB TiKV&CQL 入门 - Ubik's blog</title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Ubik's blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">Home
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">Archives
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Ubik's blog</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            Home
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            Archives
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            Tags
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            About
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">Scylla&TiDB TiKV&CQL 入门
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-04-01
+        </span></div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">Contents</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#TiDB"><span class="toc-text">TiDB</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#概念"><span class="toc-text">概念</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#glusterFS"><span class="toc-text">glusterFS</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#简介"><span class="toc-text">简介</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#scylla"><span class="toc-text">scylla</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Cassandra"><span class="toc-text">Cassandra</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Cassandra-Query-Language-CQL-语法"><span class="toc-text">Cassandra Query Language (CQL) 语法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#创建keyspace"><span class="toc-text">创建keyspace</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修改keyspace"><span class="toc-text">修改keyspace</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除keysopce"><span class="toc-text">删除keysopce</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建表"><span class="toc-text">创建表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修改表"><span class="toc-text">修改表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除表"><span class="toc-text">删除表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#截断表"><span class="toc-text">截断表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建、删除索引"><span class="toc-text">创建、删除索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#批处理"><span class="toc-text">批处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CURD"><span class="toc-text">CURD</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#数据类型"><span class="toc-text">数据类型</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#list"><span class="toc-text">list</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#set"><span class="toc-text">set</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#map"><span class="toc-text">map</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#自定义数据类型"><span class="toc-text">自定义数据类型</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Seastar"><span class="toc-text">Seastar</span></a></li></ol>
+    </div>
+  </div><div class="post-content"><p>实习的第一件事就是读本组产品的 API 文档，然后学习系统用到的底层框架。这些东西之前从没看过。</p>
+<h1 id="TiDB"><a href="#TiDB" class="headerlink" title="TiDB"></a>TiDB</h1><h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><ul>
+<li><p>OLTP (Online Transactional Processing) </p>
+</li>
+<li><p>OLAP (Online Analytical Processing) </p>
+</li>
+</ul>
+<p>通过单机的 RocksDB，我们可以将数据快速地存储在磁盘上；通过 Raft，我们可以将数据复制到多台机器上，以防单机失效。数据的写入是通过 Raft 这一层的接口写入，而不是直接写 RocksDB。通过实现 Raft，我们拥有了一个分布式的 KV，现在再也不用担心某台机器挂掉了。</p>
+<p>对于一个 KV 系统，将数据分散在多台机器上有两种比较典型的方案：一种是按照 Key 做 Hash，根据 Hash 值选择对应的存储节点；另一种是分 Range，某一段连续的 Key 都保存在一个存储节点上。TiKV 选择了第二种方式，将整个 Key-Value 空间分成很多段，每一段是一系列连续的 Key，我们将每一段叫做一个 Region，并且我们会尽量保持每个 Region 中保存的数据不超过一定的大小(这个大小可以配置，目前默认是 64mb)。每一个 Region 都可以用 StartKey 到 EndKey 这样一个左闭右开区间来描述。</p>
+<p>TiKV 集群是 TiDB 数据库的分布式 KV 存储引擎，数据以 Region 为单位进行复制和管理，每个 Region 会有多个 Replica（副本），这些 Replica 会分布在不同的 TiKV 节点上，其中 Leader 负责读/写，Follower 负责同步 Leader 发来的 raft log</p>
+<p><img src="/img/3DE33801F12030F0CB76AFE53384C6AA.jpg" alt="插图"></p>
+<h1 id="glusterFS"><a href="#glusterFS" class="headerlink" title="glusterFS"></a>glusterFS</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>GlusterFS (Gluster File System) 是一个开源的分布式文件系统，是 Scale-Out 存储解决方案 Gluster 的核心，具有强大的横向扩展能力，通过扩展能够支持数PB存储容量和处理数千客户端。借助 TCP/IP 或 InfiniBand RDMA 网络将物理分布的存储资源聚集在一起，使用单一全局命名空间来管理数据。</p>
+<h1 id="scylla"><a href="#scylla" class="headerlink" title="scylla"></a>scylla</h1><p>开源的分布式NoSQL数据存储。与Apache Cassandra兼容，同时实现更高的吞吐量和更低的延迟。<br><a href="http://www.nosqlnotes.com/technotes/scylla-highlights/" target="_blank" rel="noopener">号称十倍性能于Cassandra的ScyllaDB，究竟祭出了哪些技术”利器”？</a></p>
+<h1 id="Cassandra"><a href="#Cassandra" class="headerlink" title="Cassandra"></a>Cassandra</h1><p>Apache Cassandra（社区内一般简称为C*）是一套开源分布式NoSQL数据库系统。它最初由Facebook开发，用于储存收件箱等简单格式数据，具有高度可扩展性，可用于管理大量的结构化数据。它提供高可用性，没有单点故障,集 Google BigTable 的数据模型与 Amazon Dynamo 的完全分布式架构于一身。<br>Cassandra 使用了 Google 设计的 BigTable 的数据模型，与面向行 (row)的传统的关系型数据库或键值存储的key-value数据库不同，Cassandra 使用的是宽列存储模型(Wide Column Stores)，每行数据由row key唯一标识之后，可以有最多 20 亿个列，每个列有一个column key标识，每个column key下对应若干value。这种模型可以理解为是一个二维的key-value存储，即整个数据模型被定义成一个类似map&lt;key1, map&lt;key2,value&gt;&gt;的类型。<br><a href="https://zh.wikipedia.org/wiki/Cassandra" target="_blank" rel="noopener">wiki百科</a></p>
+<h1 id="Cassandra-Query-Language-CQL-语法"><a href="#Cassandra-Query-Language-CQL-语法" class="headerlink" title="Cassandra Query Language (CQL) 语法"></a>Cassandra Query Language (CQL) 语法</h1><p>与SQL语法类似，但不支持join和子查询<br>结构类似HBase，row x key x value<br>常用命令</p>
+<ul>
+<li>describe tables</li>
+<li>describe keyspaces</li>
+<li>source 执行包含命令的文件</li>
+</ul>
+<p>键空间是一个定义节点上数据复制的命名空间，集群中每个节点对应一个键空间。<br>键、表、行关系通过expand on expand off 可以看的很明白<br>如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">cqlsh:tutorialspoint&gt; SELECT * from emp</span><br><span class="line">                  ... ;</span><br><span class="line"></span><br><span class="line">@ Row 1</span><br><span class="line"><span class="comment">-----------+------------</span></span><br><span class="line"> emp_id    | 4</span><br><span class="line"> emp_city  | Pune</span><br><span class="line"> emp_name  | rajeev</span><br><span class="line"> emp_phone | 9848022331</span><br><span class="line"> emp_sal   | 30000</span><br><span class="line"></span><br><span class="line">@ Row 2</span><br><span class="line"><span class="comment">-----------+------------</span></span><br><span class="line"> emp_id    | 3</span><br><span class="line"> emp_city  | null</span><br><span class="line"> emp_name  | null</span><br><span class="line"> emp_phone | null</span><br><span class="line"> emp_sal   | 50000</span><br><span class="line"></span><br><span class="line">(2 rows)</span><br><span class="line">cqlsh:tutorialspoint&gt; SELECT * from emp  ;</span><br><span class="line"></span><br><span class="line"> emp_id | emp_city | emp_name | emp_phone  | emp_sal</span><br><span class="line"><span class="comment">--------+----------+----------+------------+---------</span></span><br><span class="line">      4 |     Pune |   rajeev | 9848022331 |   30000</span><br><span class="line">      3 |     null |     null |       null |   50000</span><br></pre></td></tr></table></figure>
+<h2 id="创建keyspace"><a href="#创建keyspace" class="headerlink" title="创建keyspace"></a>创建keyspace</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> KEYSPACE “KeySpace <span class="keyword">Name</span>”</span><br><span class="line"><span class="keyword">WITH</span> <span class="keyword">replication</span> = &#123;<span class="string">'class'</span>: ‘Strategy <span class="keyword">name</span>’, <span class="string">'replication_factor'</span> : ‘No.Of   replicas’&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> KEYSPACE “KeySpace <span class="keyword">Name</span>”</span><br><span class="line"><span class="keyword">WITH</span> <span class="keyword">replication</span> = &#123;<span class="string">'class'</span>: ‘Strategy <span class="keyword">name</span>’, <span class="string">'replication_factor'</span> : ‘No.Of  replicas’&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">AND</span> durable_writes = ‘<span class="built_in">Boolean</span> <span class="keyword">value</span>’;</span><br></pre></td></tr></table></figure>
+<p>其中复制选项用于指定副本位置策略和所需副本的数量，另一个是是否持久化</p>
+<h2 id="修改keyspace"><a href="#修改keyspace" class="headerlink" title="修改keyspace"></a>修改keyspace</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> KEYSPACE “KeySpace <span class="keyword">Name</span>”</span><br><span class="line"><span class="keyword">WITH</span> <span class="keyword">replication</span> = &#123;<span class="string">'class'</span>: ‘Strategy <span class="keyword">name</span>’, <span class="string">'replication_factor'</span> : ‘No.Of  replicas’&#125;;</span><br></pre></td></tr></table></figure>
+<p>对创建时的两个属性，复制和持久化作出修改</p>
+<h2 id="删除keysopce"><a href="#删除keysopce" class="headerlink" title="删除keysopce"></a>删除keysopce</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> KEYSPACE “KeySpace <span class="keyword">name</span>”</span><br></pre></td></tr></table></figure>
+
+<h2 id="创建表"><a href="#创建表" class="headerlink" title="创建表"></a>创建表</h2><p>语法与实例如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> (<span class="keyword">TABLE</span> | COLUMNFAMILY) &lt;tablename&gt;</span><br><span class="line">(<span class="string">'&lt;column-definition&gt;'</span> , <span class="string">'&lt;column-definition&gt;'</span>)</span><br><span class="line">(<span class="keyword">WITH</span> &lt;<span class="keyword">option</span>&gt; <span class="keyword">AND</span> &lt;<span class="keyword">option</span>&gt;)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> emp(</span><br><span class="line">   emp_id <span class="built_in">int</span> PRIMARY <span class="keyword">KEY</span>,</span><br><span class="line">   emp_name <span class="built_in">text</span>,</span><br><span class="line">   emp_city <span class="built_in">text</span>,</span><br><span class="line">   emp_sal varint,</span><br><span class="line">   emp_phone varint</span><br><span class="line">   );</span><br></pre></td></tr></table></figure>
+<h2 id="修改表"><a href="#修改表" class="headerlink" title="修改表"></a>修改表</h2><p>语法与实例如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> (<span class="keyword">TABLE</span> | COLUMNFAMILY) &lt;tablename&gt; &lt;instruction&gt;</span><br><span class="line"></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> tablename <span class="keyword">add</span> <span class="keyword">new</span> <span class="keyword">column</span> datatype</span><br><span class="line"></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> emp <span class="keyword">add</span> emp_email <span class="built_in">text</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> tablename <span class="keyword">drop</span> <span class="keyword">column</span> <span class="keyword">name</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> emp <span class="keyword">drop</span> emp_email</span><br></pre></td></tr></table></figure>
+<h2 id="删除表"><a href="#删除表" class="headerlink" title="删除表"></a>删除表</h2><p>语法与实例如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">drop</span> <span class="keyword">table</span> tablename</span><br></pre></td></tr></table></figure>
+<h2 id="截断表"><a href="#截断表" class="headerlink" title="截断表"></a>截断表</h2><p>(把数据都弄没）</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">truncate</span> tabblename</span><br></pre></td></tr></table></figure>
+
+<h2 id="创建、删除索引"><a href="#创建、删除索引" class="headerlink" title="创建、删除索引"></a>创建、删除索引</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">index</span> identifier <span class="keyword">on</span> tablename</span><br><span class="line"><span class="keyword">create</span> <span class="keyword">index</span> <span class="keyword">name</span> <span class="keyword">on</span> emp1</span><br><span class="line"><span class="keyword">drop</span> <span class="keyword">index</span> identifier</span><br><span class="line"><span class="keyword">drop</span> <span class="keyword">index</span> <span class="keyword">name</span></span><br></pre></td></tr></table></figure>
+<h2 id="批处理"><a href="#批处理" class="headerlink" title="批处理"></a>批处理</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">begin</span> batch </span><br><span class="line">&lt;<span class="keyword">insert</span>-stmt&gt;/ &lt;<span class="keyword">update</span>-stmt&gt;/ &lt;<span class="keyword">delete</span>-stmt&gt;</span><br><span class="line"><span class="keyword">apply</span> batch</span><br></pre></td></tr></table></figure>
+<h2 id="CURD"><a href="#CURD" class="headerlink" title="CURD"></a>CURD</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> tablename (column1name,column2name...) <span class="keyword">values</span> (value1,value2...) <span class="keyword">using</span> &lt;<span class="keyword">option</span>&gt;</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> emp (emp_id, emp_city , emp_name , emp_phone, emp_sal ) <span class="keyword">values</span>(<span class="number">250</span>,<span class="string">'nanjing'</span>,<span class="string">'nidie'</span>,<span class="number">1234567</span>,<span class="number">88888</span>)  ;(cql中使用单引号）</span><br><span class="line"></span><br><span class="line"><span class="keyword">update</span> tablename <span class="keyword">set</span> columnname=value... <span class="keyword">where</span> condition</span><br><span class="line"><span class="keyword">update</span> emp <span class="keyword">set</span> emp_city = <span class="string">'PPPPP'</span> <span class="keyword">WHERE</span> emp_id =<span class="number">250</span> ;</span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> x <span class="keyword">from</span> tablename <span class="keyword">where</span> condition</span><br></pre></td></tr></table></figure>
+<p>WHERE子句只能用于作为主键的一部分或在其上具有辅助索引的列。<br>不给where子句添加索引的情况下，会报错如下，加索引后就好了。</p>
+<blockquote>
+<p>InvalidRequest: Error from server: code=2200 [Invalid query] message=”Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING”</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> x <span class="keyword">from</span> identifier <span class="keyword">where</span> condition</span><br><span class="line">与更新一样，不加<span class="keyword">where</span>会报语法错误，有<span class="keyword">where</span>无条件变量会报<span class="keyword">no</span> viable alternative <span class="keyword">at</span> <span class="keyword">input</span> <span class="string">';'</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h1><p>CQL提供了许多内置类型包括集合，也可自定义，命令如下<br>    CREATE TYPE -创建用户定义的数据类型。</p>
+<pre><code>ALTER TYPE -修改用户定义的数据类型。
+
+DROP TYPE -删除用户定义的数据类型。
+
+DESCRIBE TYPE -描述用户定义的数据类型。
+
+DESCRIBE TYPES -描述用户定义的数据类型。</code></pre><h2 id="list"><a href="#list" class="headerlink" title="list"></a>list</h2><p>适用于保持元素顺序且值被多次存储，格式同内建类型，只是插入时用[]括起来，中间,分割。更新时如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> <span class="keyword">data</span></span><br><span class="line">... <span class="keyword">SET</span> email = email +[<span class="string">'xyz@tutorialspoint.com'</span>]</span><br><span class="line">... <span class="keyword">where</span> <span class="keyword">name</span> = <span class="string">'ramu'</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="set"><a href="#set" class="headerlink" title="set"></a>set</h2><p>根据常识，无序且不重复</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> data2 (<span class="keyword">name</span> <span class="built_in">text</span> PRIMARY <span class="keyword">KEY</span>, phone <span class="keyword">set</span>&lt;varint&gt;);</span><br><span class="line">花括号&#123;&#125;分割</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> data2(<span class="keyword">name</span>, phone)<span class="keyword">VALUES</span> (<span class="string">'rahman'</span>,    &#123;<span class="number">9848022338</span>,<span class="number">9848022339</span>&#125;);</span><br><span class="line">更新时同list</span><br><span class="line">tutorialspoint&gt; UPDATE data2</span><br><span class="line">   ... <span class="keyword">SET</span> phone = phone + &#123;<span class="number">9848022330</span>&#125;</span><br><span class="line">   ... <span class="keyword">where</span> <span class="keyword">name</span> = <span class="string">'rahman'</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="map"><a href="#map" class="headerlink" title="map"></a>map</h2><p>KV对</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> data3 (<span class="keyword">name</span> <span class="built_in">text</span> PRIMARY <span class="keyword">KEY</span>, address</span><br><span class="line"><span class="keyword">map</span>&lt;<span class="built_in">timestamp</span>, <span class="built_in">text</span>&gt;);</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> data3 (<span class="keyword">name</span>, address)</span><br><span class="line">   <span class="keyword">VALUES</span> (<span class="string">'robin'</span>, &#123;<span class="string">'home'</span> : <span class="string">'hyderabad'</span> , <span class="string">'office'</span> : <span class="string">'Delhi'</span> &#125; );</span><br><span class="line">   <span class="keyword">UPDATE</span> data3</span><br><span class="line">   ... <span class="keyword">SET</span> address = address+&#123;<span class="string">'office'</span>:<span class="string">'mumbai'</span>&#125;</span><br><span class="line">   ... <span class="keyword">WHERE</span> <span class="keyword">name</span> = <span class="string">'robin'</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="自定义数据类型"><a href="#自定义数据类型" class="headerlink" title="自定义数据类型"></a>自定义数据类型</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TYPE</span> &lt;keyspace <span class="keyword">name</span>&gt;. &lt;<span class="keyword">data</span> typename&gt;</span><br><span class="line">( variable1, variable2)</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TYPE</span> tutorialspoint.card_details (</span><br><span class="line">   <span class="keyword">num</span> <span class="built_in">int</span>,</span><br><span class="line">   pin <span class="built_in">int</span>,</span><br><span class="line">   <span class="keyword">name</span> <span class="built_in">text</span>,</span><br><span class="line">   cvv <span class="built_in">int</span>,</span><br><span class="line">   phone <span class="keyword">set</span>&lt;<span class="built_in">int</span>&gt;</span><br><span class="line">   );</span><br><span class="line">   </span><br><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TYPE</span> typename</span><br><span class="line"><span class="keyword">ADD</span> field_name field_type; </span><br><span class="line"></span><br><span class="line">DESCRIBE_TYPES命令验证所有用户定义的数据类型的列表</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1 id="Seastar"><a href="#Seastar" class="headerlink" title="Seastar"></a>Seastar</h1><p>一个用于在现代多核机器上，编写高效复杂的服务器应用程序的C++库。它允许构建高度复杂的服务端应用程序，同时性能很好。它是事件驱动的，允许以相对直接的方式编写非阻塞的异步代码。<br>Scylladb第一个使用了Seastar，它是对Apache Cassandra的重写。 Cassandra是一个非常复杂的应用程序，然而，通过Seastar，我们能够让吞吐量提高10倍，同时显著的降低一致性的延迟。</p>
+<blockquote>
+<p>异步服务器应用程序的作者面临着今天仍面临的两大挑战：</p>
+<p> 复杂性：编写简单的异步服务器非常简单。但是编写一个复杂的异步服务器是非常困难的。单个连接的处理，而不是一个简单易读的函数调用，现在涉及大量的小型回调函数和一个复杂的状态机，以记住每个事件发生时需要调用哪个函数。</p>
+<p> 非阻塞：每个内核只有一个线程，对于服务器应用程序性能很重要，因为上下文切换很慢。但是，如果我们每个内核只有一个线程，则事件处理函数不能阻塞，否则内核将保持空闲状态。但是一些现有的编程语言和框架让服务器作者别无选择，只能使用阻塞函数，因此也不能使用多线程。例如，Cassandra被编写为一个异步服务器应用程序;但是因为磁盘I/O是用mmaped文件实现的，所以在访问时可以不受控制地阻塞整个线程，它们被迫在每个CPU上运行多个线程。</p>
+</blockquote>
+
+      </div>
+      <div class="post-copyright">
+    <p class="copyright-item">
+      <span>Author: </span>
+      <a href="http://yoursite.com">Adam Ubik</a>
+    </p>
+    <p class="copyright-item">
+      <span>Link: </span>
+      <a href="http://yoursite.com/2019/04/01/2019-07-05-Scylla&TiDB%20TiKV&glusterFS%E5%88%9D%E6%AD%A5%E5%AD%A6%E4%B9%A0/">http://yoursite.com/2019/04/01/2019-07-05-Scylla&TiDB%20TiKV&glusterFS%E5%88%9D%E6%AD%A5%E5%AD%A6%E4%B9%A0/</a>
+    </p>
+    <p class="copyright-item">
+      <span>License: </span><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/%E7%AC%94%E8%AE%B0/">笔记</a>
+            <a href="/tags/%E5%AE%9E%E4%B9%A0/">实习</a>
+            <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+            </div>
+        
+        <nav class="post-nav"><a class="prev" href="/2019/04/01/2019-05-31-Java%20%E4%B8%AD%20%E6%8C%89%E9%9C%80%E5%AF%BC%E6%AF%94%E5%8D%95%E7%B1%BB%E5%9E%8B%E5%AF%BC%E5%85%A5%E6%85%A2%E5%A4%9A%E5%B0%91%EF%BC%9F/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">Import * 真的比单项导入慢吗？</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    <a class="next" href="/2019/03/23/2019-06-02-%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E4%B8%A4%E8%8A%82%E7%82%B9%E7%9A%84%E6%9C%80%E8%BF%91%E5%85%AC%E5%85%B1%E7%A5%96%E5%85%88/">
+        <span class="next-text nav-default">二叉树中两节点的最近公共祖先问题</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:Dingbiao1998@icloud.com" target="_blank" rel="noopener" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/Ubique0305" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2018 - 2019<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Adam Ubik</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>

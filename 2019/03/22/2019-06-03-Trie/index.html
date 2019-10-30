@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="Trie树的构造与性质"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/default" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="http://yoursite.com/2019/03/22/2019-06-03-Trie/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" /><script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":true};
+</script>
+
+    <title>Trie树的构造与性质 - Ubik's blog</title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Ubik's blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">Home
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">Archives
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Ubik's blog</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            Home
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            Archives
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            Tags
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            About
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">Trie树的构造与性质
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-03-22
+        </span></div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">Contents</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#定义"><span class="toc-text">定义</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#性质"><span class="toc-text">性质</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#搜索与添加过程"><span class="toc-text">搜索与添加过程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#实现"><span class="toc-text">实现</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#节点-TrieNode"><span class="toc-text">节点 TrieNode</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#插入"><span class="toc-text">插入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#搜索"><span class="toc-text">搜索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除"><span class="toc-text">删除</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#返回以-str-为前缀的单词数量"><span class="toc-text">返回以 str 为前缀的单词数量</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#特性"><span class="toc-text">特性</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#应用"><span class="toc-text">应用</span></a></li></ol>
+    </div>
+  </div><div class="post-content"><p>本文介绍了 Trie（读同 Tree）树的定义、性质、实现以及应用。在刷 leetcode 时偶尔会用到，在一些经典问题的最优解如 “二叉树的最近公共祖先” 中也有涉及</p>
+<h1 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h1><p>字典树是一种树形结构，利用字符串的公共前缀来节约存储空间，一个保存了若干键的trie结构，”A”, “to”, “tea”, “ted”, “ten”, “i”, “in”, and “inn”如图所示<br><img src="/img/9562B0F2A18AF2A1D23EB4B276FA7304.jpg" alt="插图"></p>
+<h1 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h1><p>字典树基本性质如下</p>
+<ol>
+<li>根节点没有路径字符，其余每一个节点都被一个字符路径找到</li>
+<li>从根节点到某一节点，将路径上经过的字符连起来为对应字符串</li>
+<li>每个节点引出的所有字符路径上的字符都不一样</li>
+</ol>
+<h1 id="搜索与添加过程"><a href="#搜索与添加过程" class="headerlink" title="搜索与添加过程"></a>搜索与添加过程</h1><ol>
+<li>从根节点开始搜索</li>
+<li>取得要查找的单词的第一个字母，选择对应字符路径向下搜索</li>
+<li>字符路径指向第二层节点上，根据第二个字母选择对应的字符继续搜索</li>
+<li>一直向下搜索，如果单词搜索完后，最后一个节点是终止节点，说明找到。如果最后一个节点不是终止节点，或者还没搜索完单词就没有后续节点了，说明这个单词没添加过，不断生成新的节点并添加即可。</li>
+</ol>
+<h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><h2 id="节点-TrieNode"><a href="#节点-TrieNode" class="headerlink" title="节点 TrieNode"></a>节点 TrieNode</h2><p>path 代表有多少单词公用这个节点，end表示有多少单词以该节点结尾，map的key 代表该节点的字符路径，value是字符路径指向的节点，在只有小写字母的情况下，map.length=26.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TrieNode</span> </span>&#123;</span><br><span class="line">		<span class="keyword">public</span> <span class="keyword">int</span> path;</span><br><span class="line">		<span class="keyword">public</span> <span class="keyword">int</span> end;</span><br><span class="line">		<span class="keyword">public</span> TrieNode[] map;</span><br><span class="line"></span><br><span class="line">		<span class="function"><span class="keyword">public</span> <span class="title">TrieNode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">			path = <span class="number">0</span>;</span><br><span class="line">			end = <span class="number">0</span>;</span><br><span class="line">			map = <span class="keyword">new</span> TrieNode[<span class="number">26</span>];</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h2><p>设 str 长为n，从左到右遍历 str 中每个字符，并据此找下一个节点。如果找的过程中节点不存在，就新建节点，并令其 path = 1，如果存在，就令其 path++。通过最后一个字符找到最后一个节点时，令其path++，end++</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">insert</span><span class="params">(String word)</span> </span>&#123;</span><br><span class="line">			<span class="keyword">if</span> (word == <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="keyword">return</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">char</span>[] chs = word.toCharArray();</span><br><span class="line">			TrieNode node = root;</span><br><span class="line">			node.path++;</span><br><span class="line">			<span class="keyword">int</span> index = <span class="number">0</span>;</span><br><span class="line">			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; chs.length; i++) &#123;</span><br><span class="line">				index = chs[i] - <span class="string">'a'</span>;</span><br><span class="line">				<span class="keyword">if</span> (node.map[index] == <span class="keyword">null</span>) &#123;</span><br><span class="line">					node.map[index] = <span class="keyword">new</span> TrieNode();</span><br><span class="line">				&#125;</span><br><span class="line">				node = node.map[index];</span><br><span class="line">				node.path++;</span><br><span class="line">			&#125;</span><br><span class="line">			node.end++;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="搜索"><a href="#搜索" class="headerlink" title="搜索"></a>搜索</h2><p>依次遍历 str 中每个字符，并依次从头节点开始根据每一个 字符找下一个节点，如果节点不存在，说明没有添加进 trie，返回 false，如果能通过 str[n-1]找到最后一个节点，记为e，若e.end!=0,说明有单词通过str[n-1]的字符路径，否则返回fasle。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">search</span><span class="params">(String word)</span> </span>&#123;</span><br><span class="line">			<span class="keyword">if</span> (word == <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">char</span>[] chs = word.toCharArray();</span><br><span class="line">			TrieNode node = root;</span><br><span class="line">			<span class="keyword">int</span> index = <span class="number">0</span>;</span><br><span class="line">			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; chs.length; i++) &#123;</span><br><span class="line">				index = chs[i] - <span class="string">'a'</span>;</span><br><span class="line">				<span class="keyword">if</span> (node.map[index] == <span class="keyword">null</span>) &#123;</span><br><span class="line">					<span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">				&#125;</span><br><span class="line">				node = node.map[index];</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">return</span> node.end != <span class="number">0</span>;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h2><p>先调用 search() 函数，看 str 在不在 Trie 中，若不在则直接返回。否则和上边一样，从左到右遍历 str 中每个字符并寻找下一个节点。扫的过程中，经过的每一个节点，其 path-1，若发现某 path 减完后已经为0，就从当前节点map中删除后续所有路径，然后返回。如果扫到最后一个即诶单，记为e，令e.path–,e.end–.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">delete</span><span class="params">(String word)</span> </span>&#123;</span><br><span class="line">			<span class="keyword">if</span> (search(word)) &#123;</span><br><span class="line">				<span class="keyword">char</span>[] chs = word.toCharArray();</span><br><span class="line">				TrieNode node = root;</span><br><span class="line">				node.path--;</span><br><span class="line">				<span class="keyword">int</span> index = <span class="number">0</span>;</span><br><span class="line">				<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; chs.length; i++) &#123;</span><br><span class="line">					index = chs[i] - <span class="string">'a'</span>;</span><br><span class="line">					<span class="keyword">if</span> (node.map[index].path-- == <span class="number">1</span>) &#123;</span><br><span class="line">						node.map[index] = <span class="keyword">null</span>;</span><br><span class="line">						<span class="keyword">return</span>;</span><br><span class="line">					&#125;</span><br><span class="line">					node = node.map[index];</span><br><span class="line">				&#125;</span><br><span class="line">				node.end--;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="返回以-str-为前缀的单词数量"><a href="#返回以-str-为前缀的单词数量" class="headerlink" title="返回以 str 为前缀的单词数量"></a>返回以 str 为前缀的单词数量</h2><p>与查找操作类似，根据 pre 不断找到节点，返回最后的节点的 path 值即可。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">prefixNumber</span><span class="params">(String pre)</span> </span>&#123;</span><br><span class="line">			<span class="keyword">if</span> (pre == <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">char</span>[] chs = pre.toCharArray();</span><br><span class="line">			TrieNode node = root;</span><br><span class="line">			<span class="keyword">int</span> index = <span class="number">0</span>;</span><br><span class="line">			<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; chs.length; i++) &#123;</span><br><span class="line">				index = chs[i] - <span class="string">'a'</span>;</span><br><span class="line">				<span class="keyword">if</span> (node.map[index] == <span class="keyword">null</span>) &#123;</span><br><span class="line">					<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">				&#125;</span><br><span class="line">				node = node.map[index];</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">return</span> node.path;</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h1><p>是一种空间换时间的结构，利用字符串的公共前缀来减少无谓的字符串比较以达到提高查询效率的目的。从上述实现中可以看出，插入查询的时间复杂度都与待操作字符串长度线性相关。</p>
+<h1 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h1><ol>
+<li>查找</li>
+<li>词频统计</li>
+<li>字符串排序</li>
+<li>前缀匹配</li>
+<li>辅助结构如后缀树和AC自动机</li>
+</ol>
+
+      </div>
+      <div class="post-copyright">
+    <p class="copyright-item">
+      <span>Author: </span>
+      <a href="http://yoursite.com">Adam Ubik</a>
+    </p>
+    <p class="copyright-item">
+      <span>Link: </span>
+      <a href="http://yoursite.com/2019/03/22/2019-06-03-Trie/">http://yoursite.com/2019/03/22/2019-06-03-Trie/</a>
+    </p>
+    <p class="copyright-item">
+      <span>License: </span><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>
+            <a href="/tags/%E5%AD%97%E7%AC%A6%E4%B8%B2/">字符串</a>
+            <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">数据结构</a>
+            </div>
+        
+        <nav class="post-nav"><a class="prev" href="/2019/03/23/2019-06-02-%E4%BA%8C%E5%8F%89%E6%A0%91%E4%B8%AD%E4%B8%A4%E8%8A%82%E7%82%B9%E7%9A%84%E6%9C%80%E8%BF%91%E5%85%AC%E5%85%B1%E7%A5%96%E5%85%88/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">二叉树中两节点的最近公共祖先问题</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    <a class="next" href="/2019/03/13/2019-07-17-%E5%B9%82%E7%AD%89%E6%80%A7%E7%9A%84%E6%8E%A2%E7%B4%A2/">
+        <span class="next-text nav-default">幂等性解决方案初探</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:Dingbiao1998@icloud.com" target="_blank" rel="noopener" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/Ubique0305" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2018 - 2019<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Adam Ubik</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>

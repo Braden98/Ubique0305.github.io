@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="代码整洁之道"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/default" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="http://yoursite.com/2019/05/02/2019-05-26-代码整洁之道-程序员的职业修养/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" /><script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":true};
+</script>
+
+    <title>代码整洁之道 - Ubik's blog</title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Ubik's blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">Home
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">Archives
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Ubik's blog</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            Home
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            Archives
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            Tags
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            About
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">代码整洁之道
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-05-02
+        </span></div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">Contents</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#专业主义"><span class="toc-text">专业主义</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#不行损害之事"><span class="toc-text">不行损害之事</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#每个开发人员必须精通的事项"><span class="toc-text">每个开发人员必须精通的事项</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#职业道德"><span class="toc-text">职业道德</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#说“不”"><span class="toc-text">说“不”</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#说“是”"><span class="toc-text">说“是”</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#承诺用语"><span class="toc-text">承诺用语</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#逃避用语"><span class="toc-text">逃避用语</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#编码"><span class="toc-text">编码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#代码要求"><span class="toc-text">代码要求</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#个人状态"><span class="toc-text">个人状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#保持节奏"><span class="toc-text">保持节奏</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#帮助"><span class="toc-text">帮助</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#测试驱动开发"><span class="toc-text">测试驱动开发</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#三项法则是"><span class="toc-text">三项法则是</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#优势"><span class="toc-text">优势</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#局限"><span class="toc-text">局限</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#练习"><span class="toc-text">练习</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#验收测试"><span class="toc-text">验收测试</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#测试策略"><span class="toc-text">测试策略</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#时间管理"><span class="toc-text">时间管理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#预估"><span class="toc-text">预估</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#压力"><span class="toc-text">压力</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#协作"><span class="toc-text">协作</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#项目与团队"><span class="toc-text">项目与团队</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#辅导、学徒期与技艺"><span class="toc-text">辅导、学徒期与技艺</span></a></li></ol>
+    </div>
+  </div><div class="post-content"><p>读过《代码整洁之道》后列了如下提纲，时常翻阅可能会写出更整洁的代码。相比 Alibaba 和唯品会的 Java 开发手册，这本书从更宏观的角度以及代码之外的事情（沟通、需求、设计、管理）提出了一些可实操的有用的方法。从这点来看，书名叫做《程序员的自我修养》也不错，哈哈。</p>
+<blockquote>
+<p>享受职业素养。</p>
+</blockquote>
+<h1 id="专业主义"><a href="#专业主义" class="headerlink" title="专业主义"></a>专业主义</h1><h2 id="不行损害之事"><a href="#不行损害之事" class="headerlink" title="不行损害之事"></a>不行损害之事</h2><ul>
+<li><p>让 QA 找不出任何问题</p>
+</li>
+<li><p>确信代码能正常运行（通过主动反复测试）</p>
+</li>
+<li><p>自动化 QA</p>
+</li>
+<li><p>不要破坏结构，以牺牲结构为代价发布新功能，得不偿失，将来必定后悔。</p>
+</li>
+</ul>
+<p>##了解所在领域</p>
+<ul>
+<li><p>NS图表</p>
+</li>
+<li><p>Mealy &amp; Moore 状态机的差别</p>
+</li>
+<li><p>变换分析的含义</p>
+</li>
+<li><p>快速排序手写</p>
+</li>
+<li><p>临时传递数据</p>
+</li>
+<li><p>耦合性（Conascence）</p>
+</li>
+</ul>
+<h2 id="每个开发人员必须精通的事项"><a href="#每个开发人员必须精通的事项" class="headerlink" title="每个开发人员必须精通的事项"></a>每个开发人员必须精通的事项</h2><ul>
+<li><p>设计模式 （GOF，24）</p>
+</li>
+<li><p>设计原则（SOLID）</p>
+</li>
+<li><p>编程方法</p>
+<ul>
+<li>XP</li>
+<li>Scrum</li>
+<li>精益</li>
+<li>看板</li>
+<li>瀑布</li>
+<li>结构化分析、设计</li>
+</ul>
+</li>
+<li><p>实践</p>
+<ul>
+<li>测试驱动开发</li>
+<li>面向对象设计</li>
+<li>结构化编程</li>
+<li>持续集成</li>
+<li>结对编程</li>
+</ul>
+</li>
+<li><p>工件</p>
+<ul>
+<li>UML 图</li>
+<li>DFD 图</li>
+<li>结构图</li>
+<li>Petri 网络图</li>
+<li>状态迁移图标</li>
+<li>流程图</li>
+<li>决策表</li>
+<li>甘特图<h2 id="职业道德"><a href="#职业道德" class="headerlink" title="职业道德"></a>职业道德</h2></li>
+</ul>
+</li>
+<li><p>坚持学习</p>
+</li>
+<li><p>练习</p>
+</li>
+<li><p>合作</p>
+</li>
+<li><p>辅导</p>
+</li>
+<li><p>了解业务领域</p>
+</li>
+<li><p>与客户（需求）保持一致</p>
+</li>
+<li><p>谦逊</p>
+</li>
+</ul>
+<h1 id="说“不”"><a href="#说“不”" class="headerlink" title="说“不”"></a>说“不”</h1><ul>
+<li>当你面对类似猩猩卖场提出的在黑色星期五之前做出一个 iPhone 应用的需求时，你应该尊重事实和自己，敢于说“不”。</li>
+</ul>
+<h1 id="说“是”"><a href="#说“是”" class="headerlink" title="说“是”"></a>说“是”</h1><h2 id="承诺用语"><a href="#承诺用语" class="headerlink" title="承诺用语"></a>承诺用语</h2><p>做出承诺包含三个步骤</p>
+<ul>
+<li><p><strong>口头上说</strong>自己将会去做</p>
+</li>
+<li><p><strong>心里认真对待</strong>做出的承诺</p>
+</li>
+<li><p>真正<strong>付诸行动</strong></p>
+</li>
+</ul>
+<h2 id="逃避用语"><a href="#逃避用语" class="headerlink" title="逃避用语"></a>逃避用语</h2><ul>
+<li>需要/应该<ul>
+<li>我们需要把这事做完</li>
+<li>但愿我有时间做这事</li>
+</ul>
+</li>
+<li>希望/但愿<ul>
+<li>希望我明天能完成任务</li>
+<li>但愿电脑能快点</li>
+</ul>
+</li>
+<li>让我们（而不是让我）<ul>
+<li>让我们回头见</li>
+<li>让我们把这事做完<br>总之，说“是”就是：你对自己将会做某事做了清晰的事实陈述，而且还说明了完成期限。</li>
+</ul>
+</li>
+</ul>
+<h1 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h1><h2 id="代码要求"><a href="#代码要求" class="headerlink" title="代码要求"></a>代码要求</h2><ul>
+<li><p>代码能正常工作</p>
+</li>
+<li><p>代码能满足需求</p>
+</li>
+<li><p>代码能和现有系统结合得天衣无缝</p>
+</li>
+<li><p>其他程序员能读懂你的代码</p>
+</li>
+</ul>
+<h2 id="个人状态"><a href="#个人状态" class="headerlink" title="个人状态"></a>个人状态</h2><ul>
+<li><p>凌晨三点写的可能是糟糕的代码</p>
+</li>
+<li><p>焦虑时也是如此</p>
+</li>
+<li><p>流态区可能会效率高，但也会导致<strong>忽略与全局整合</strong></p>
+</li>
+<li><p>音乐并不能提高效率</p>
+</li>
+<li><p>被打断的预防是结对编程或者 TDD</p>
+</li>
+<li><p>阻塞时找点别的事情干</p>
+</li>
+<li><p>“创造性输出”依赖于“创造性输入”，比如音乐、小说、电影等</p>
+</li>
+<li><p>调试也是编码的一部分</p>
+</li>
+</ul>
+<h2 id="保持节奏"><a href="#保持节奏" class="headerlink" title="保持节奏"></a>保持节奏</h2><p>软件开发是一场马拉松🏃🏻‍♂️而不是短跑。</p>
+<ul>
+<li><p>知道何时应该离开一会，疲倦、预防颈椎病、心血管疾病（……)</p>
+</li>
+<li><p>开车回家路上，脑袋可以解决一些问题</p>
+</li>
+<li><p>洗澡同上</p>
+</li>
+<li><p>进度延迟时坚决坚持你的估算</p>
+</li>
+<li><p>加班长期来说并无好处</p>
+</li>
+</ul>
+<h2 id="帮助"><a href="#帮助" class="headerlink" title="帮助"></a>帮助</h2><ul>
+<li><p>帮助他人可以收获更多</p>
+</li>
+<li><p>接受他人帮助</p>
+</li>
+<li><p>辅导缺乏经验的程序员是老鸟的职责</p>
+</li>
+</ul>
+<h1 id="测试驱动开发"><a href="#测试驱动开发" class="headerlink" title="测试驱动开发"></a>测试驱动开发</h1><p>最早是 XP 极限编程运动的一部分，后被其他所有敏捷方法采纳。不仅是一种缩短编码周期的简单技巧。</p>
+<h2 id="三项法则是"><a href="#三项法则是" class="headerlink" title="三项法则是"></a>三项法则是</h2><ol>
+<li><p>编写好失败单元测试之前，不写任何产品代码</p>
+</li>
+<li><p>只要有一个单元测试失败，就不再写测试代码；无法通过编译也是一种失败</p>
+</li>
+<li><p>产品代码恰好能够让当前的失败单元测试通过即可，不必多写</p>
+</li>
+</ol>
+<h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><ul>
+<li><p>确定性 修改之后运行测试，确保没有错误因修改产生</p>
+</li>
+<li><p>减少 Bug</p>
+</li>
+<li><p>让人敢于修改代码</p>
+</li>
+<li><p>单元测试成为示例和文档</p>
+</li>
+<li><p>遵循三项法则有助于做出松耦合的设计，因为测试不允许耦合</p>
+</li>
+<li><p>专业人士的选择</p>
+</li>
+</ul>
+<h2 id="局限"><a href="#局限" class="headerlink" title="局限"></a>局限</h2><ul>
+<li>某些情况下确实不适用，并非银弹，就像 DDD。</li>
+</ul>
+<h1 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h1><ul>
+<li>用自己的时间练习————保证不落伍是自己的责任</li>
+</ul>
+<p>-专业人士需要练习，做到最好，拓宽视野。</p>
+<h1 id="验收测试"><a href="#验收测试" class="headerlink" title="验收测试"></a>验收测试</h1><ul>
+<li><p>不要过早精细化————你不知道哪儿应该精细化</p>
+</li>
+<li><p>但确定需求应该尽早</p>
+</li>
+<li><p>业务分析员测试“正确路径”，QA测试“错误路径”</p>
+</li>
+<li><p>验收测试是业务方写给业务方的，单元测试是程序员写给自己的（也可以拿来做文档的一部分）</p>
+</li>
+</ul>
+<h1 id="测试策略"><a href="#测试策略" class="headerlink" title="测试策略"></a>测试策略</h1><ul>
+<li><p>QA 的任务就是和业务人员一起创建自动化验收测试。</p>
+</li>
+<li><p>自动化测试金字塔，自顶向下依次是</p>
+<ul>
+<li><p>人工探索式测试：需要人工介入，既不是自动化测试，也非脚本测试，目的是探索系统预期之外的能力</p>
+</li>
+<li><p>系统测试：对整个集成完毕的系统的自动化测试，不会直接测试业务规则，而是测试系统是否已经正确组装完毕、各部件之间是否能正常交互。</p>
+</li>
+<li><p>集成测试：组装配件成组合，判断其是否正常通信，是编排型测试，只看是否协调，不管业务规则</p>
+</li>
+<li><p>组件测试：对组建的业务规则的验收测试</p>
+</li>
+<li><p>单元测试：供程序员自己使用</p>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="时间管理"><a href="#时间管理" class="headerlink" title="时间管理"></a>时间管理</h1><p>8小时很短暂，只有480分钟，28800秒。</p>
+<ul>
+<li><p>会议需要成本，时间成本和金钱成本</p>
+</li>
+<li><p>会议并不总要参加，也可以离席</p>
+</li>
+<li><p>敏捷开发会议需要回答三个问题，每个问题不超过 20s</p>
+<ul>
+<li>我昨天干了什么</li>
+<li>我今天打算干什么</li>
+<li>我遇到了什么问题</li>
+</ul>
+</li>
+<li><p>注意力</p>
+<ul>
+<li>足够的睡眠</li>
+<li>不集中注意力时，注意力可以恢复</li>
+<li>肌肉注意力不同于心智注意力，且前者可以改善后者</li>
+<li>平衡输入与输出</li>
+</ul>
+</li>
+<li><p>要避免的行为</p>
+<ul>
+<li>优先级错乱</li>
+<li>死胡同（走不下去，应该折返）</li>
+<li>泥潭（可以完成但效率严重降低，应及时抽身）</li>
+</ul>
+</li>
+</ul>
+<h1 id="预估"><a href="#预估" class="headerlink" title="预估"></a>预估</h1><p>不同的人对预估看法不同。业务方觉得预估就是承诺，开发方认为认为预估只是个猜测。</p>
+<ul>
+<li><p>避免暗示性承诺，分清楚预估与承诺</p>
+</li>
+<li><p>计划评审技术（PERT）</p>
+<ul>
+<li>乐观预估 O</li>
+<li>标称预估 N</li>
+<li>悲观预估 P</li>
+<li>期望时间 u = (O+4N+P)/6</li>
+<li>标准差 o = (P-O)/6</li>
+<li></li>
+</ul>
+</li>
+<li><p>生成共识的 Delphi 法</p>
+<ul>
+<li>亮手指</li>
+<li>规划扑克</li>
+<li>关联预估</li>
+<li>三元预估</li>
+</ul>
+</li>
+<li><p>大数定律防止预估出错</p>
+</li>
+</ul>
+<h1 id="压力"><a href="#压力" class="headerlink" title="压力"></a>压力</h1><ul>
+<li><p>避免压力</p>
+<ul>
+<li>合理的承诺</li>
+<li>保持整洁</li>
+<li>危机中的纪律</li>
+</ul>
+</li>
+<li><p>应对压力</p>
+<ul>
+<li>不要惊慌失措</li>
+<li>沟通</li>
+<li>依靠纪律原则</li>
+<li>寻求帮助</li>
+</ul>
+</li>
+</ul>
+<h1 id="协作"><a href="#协作" class="headerlink" title="协作"></a>协作</h1><blockquote>
+<p>我们并非是因为喜欢和其他人在一起工作而选择做程序员的</p>
+</blockquote>
+<ul>
+<li><p>与用户讨论，理解业务</p>
+</li>
+<li><p>与程序员密切合作</p>
+<ul>
+<li>共享代码</li>
+<li>结对编程</li>
+</ul>
+</li>
+</ul>
+<h1 id="项目与团队"><a href="#项目与团队" class="headerlink" title="项目与团队"></a>项目与团队</h1><blockquote>
+<p>项目比团队更难构建</p>
+</blockquote>
+<ul>
+<li><p>让一个程序员同时投身两个项目并不明智</p>
+</li>
+<li><p>有凝聚力的团队可以有3-20人，最好是12人。</p>
+</li>
+</ul>
+<h1 id="辅导、学徒期与技艺"><a href="#辅导、学徒期与技艺" class="headerlink" title="辅导、学徒期与技艺"></a>辅导、学徒期与技艺</h1><blockquote>
+<p>医学专业已经建立了一套严密的辅导体系。</p>
+</blockquote>
+<ul>
+<li>上升过程<ul>
+<li>学徒期/实习生</li>
+<li>熟练工</li>
+<li>大师<br>学校能够传授的是理论，无法传授作为一个程序员所需掌握的原则、实践和技能。这些东西只有经由师徒个体间多年的细心监督和辅导才能获得。每个程序员都会经历上述时期，因此应该建立一种包含学徒期、实习期和长期指引的机制。</li>
+</ul>
+</li>
+</ul>
+
+      </div>
+      <div class="post-copyright">
+    <p class="copyright-item">
+      <span>Author: </span>
+      <a href="http://yoursite.com">Adam Ubik</a>
+    </p>
+    <p class="copyright-item">
+      <span>Link: </span>
+      <a href="http://yoursite.com/2019/05/02/2019-05-26-%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93-%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E8%81%8C%E4%B8%9A%E4%BF%AE%E5%85%BB/">http://yoursite.com/2019/05/02/2019-05-26-%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93-%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E8%81%8C%E4%B8%9A%E4%BF%AE%E5%85%BB/</a>
+    </p>
+    <p class="copyright-item">
+      <span>License: </span><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/Summary/">Summary</a>
+            <a href="/tags/Clean-Code/">Clean Code</a>
+            </div>
+        
+        <nav class="post-nav"><a class="prev" href="/2019/05/13/2019-06-21-Golang%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E5%88%9D%E6%8E%A2/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">Golang 内存模型初探</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    <a class="next" href="/2019/05/02/2019-07-31-Redis%E5%AD%A6%E4%B9%A0%E6%95%B4%E7%90%86/">
+        <span class="next-text nav-default">Redis 学习笔记</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:Dingbiao1998@icloud.com" target="_blank" rel="noopener" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/Ubique0305" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2018 - 2019<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Adam Ubik</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>

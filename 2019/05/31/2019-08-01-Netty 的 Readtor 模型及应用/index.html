@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="Reactor 模型及其在 Netty 中的应用"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/default" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="http://yoursite.com/2019/05/31/2019-08-01-Netty 的 Readtor 模型及应用/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" /><script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":true};
+</script>
+
+    <title>Reactor 模型及其在 Netty 中的应用 - Ubik's blog</title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Ubik's blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">Home
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">Archives
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Ubik's blog</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            Home
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            Archives
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            Tags
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            About
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">Reactor 模型及其在 Netty 中的应用
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-05-31
+        </span></div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">Contents</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Reactor-的三种实现"><span class="toc-text">Reactor 的三种实现</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#单-Reactor-单线程模型"><span class="toc-text">单 Reactor 单线程模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#单-Reactor-多线程模型"><span class="toc-text">单 Reactor 多线程模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#多-Reactor-多线程模型"><span class="toc-text">多 Reactor 多线程模型</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Netty-中的应用"><span class="toc-text">Netty 中的应用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#NIO-客户端"><span class="toc-text">NIO 客户端</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NIO-服务端"><span class="toc-text">NIO 服务端</span></a></li></ol></li></ol>
+    </div>
+  </div><div class="post-content"><p>EventLoop 是 Netty 基于 Reactor 模型的思想进行实现，在读 EventLoop 的源码之前，有必要了解这个东西。<br>wiki: </p>
+<blockquote>
+<p>The reactor design pattern is an event handling pattern for handling service requests delivered concurrently to a service handler by one or more inputs. The service handler then demultiplexes the incoming requests and dispatches them synchronously to the associated request handlers.</p>
+</blockquote>
+<p>也不复杂，其核心思想就是<strong>将关注的 I/O 事件注册到多路复用器上，一旦有 I/O 事件触发，将事件分发到事件处理器中，执行就绪 I/O 事件对应的处理函数中。</strong>模型中有三个重要的组件：</p>
+<ol>
+<li><p>多路复用器：由操作系统提供接口，Linux 提供的 I/O 复用接口有select、poll、epoll 。</p>
+</li>
+<li><p>事件分离器：将多路复用器返回的就绪事件分发到事件处理器中。</p>
+</li>
+<li><p>事件处理器：处理就绪事件处理函数。</p>
+</li>
+</ol>
+<h1 id="Reactor-的三种实现"><a href="#Reactor-的三种实现" class="headerlink" title="Reactor 的三种实现"></a>Reactor 的三种实现</h1><ol>
+<li><p>单 Reactor 单线程模型</p>
+</li>
+<li><p>单 Reactor 多线程模型</p>
+</li>
+<li><p>多 Reactor 多线程模型</p>
+</li>
+</ol>
+<p>下边我们来分析</p>
+<h2 id="单-Reactor-单线程模型"><a href="#单-Reactor-单线程模型" class="headerlink" title="单 Reactor 单线程模型"></a>单 Reactor 单线程模型</h2><p><img src="/img/235321555549FA0C8EC19CC77D47169A.jpg" alt=""><br>示例代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 等待事件到来，分发事件处理</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Reactor</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">​</span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="title">Reactor</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">      SelectionKey sk = serverSocket.register(selector, SelectionKey.OP_ACCEPT);</span><br><span class="line">      <span class="comment">// attach Acceptor 处理新连接</span></span><br><span class="line">      sk.attach(<span class="keyword">new</span> Acceptor());</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">​  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="keyword">while</span> (!Thread.interrupted()) &#123;</span><br><span class="line">              selector.select();</span><br><span class="line">              Set selected = selector.selectedKeys();</span><br><span class="line">              Iterator it = selected.iterator();</span><br><span class="line">              <span class="keyword">while</span> (it.hasNext()) &#123;</span><br><span class="line">                  it.remove();</span><br><span class="line">                  <span class="comment">//分发事件处理</span></span><br><span class="line">                  dispatch((SelectionKey) (it.next()));</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125; <span class="keyword">catch</span> (IOException ex) &#123;</span><br><span class="line">          <span class="comment">//do something</span></span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">dispatch</span><span class="params">(SelectionKey k)</span> </span>&#123;</span><br><span class="line">      <span class="comment">// 若是连接事件获取是acceptor</span></span><br><span class="line">      <span class="comment">// 若是IO读写事件获取是handler</span></span><br><span class="line">      Runnable runnable = (Runnable) (k.attachment());</span><br><span class="line">      <span class="keyword">if</span> (runnable != <span class="keyword">null</span>) &#123;</span><br><span class="line">          runnable.run();</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这是最基础的单 Reactor 单线程模型。</p>
+<p>Reactor 线程，负责多路分离套接字。</p>
+<p>有新连接到来触发 OP_ACCEPT 事件之后， 交由 Acceptor 进行处理。<br>有 IO 读写事件之后，交给 Handler 处理。<br>Acceptor 主要任务是构造 Handler 。</p>
+<p>在获取到 Client 相关的 SocketChannel 之后，绑定到相应的 Handler 上。对应的 SocketChannel 有读写事件之后，基于 Reactor 分发，Handler 就可以处理了。</p>
+<p>注意，所有的 IO 事件都绑定到 Selector 上，由 Reactor 统一分发。<br>该模型适用于处理器链中业务处理组件能快速完成的场景。不过，这种单线程模型不能充分利用多核资源，所以实际使用的不多。</p>
+<h2 id="单-Reactor-多线程模型"><a href="#单-Reactor-多线程模型" class="headerlink" title="单 Reactor 多线程模型"></a>单 Reactor 多线程模型</h2><p><img src="/img/D0784A26CAE5C4015A0D51697C9753C5.jpg" alt="插图"><br>相对于第一种单线程的模式来说，在处理业务逻辑，也就是获取到 IO 的读写事件之后，交由线程池来处理，这样可以减小主 Reactor 的性能开销，从而更专注的做事件分发工作了，从而提升整个应用的吞吐。</p>
+<p>MultiThreadHandler 示例代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 多线程处理读写业务逻辑</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MultiThreadHandler</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> READING = <span class="number">0</span>, WRITING = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">int</span> state;</span><br><span class="line">  <span class="keyword">final</span> SocketChannel socket;</span><br><span class="line">  <span class="keyword">final</span> SelectionKey sk;</span><br><span class="line">​</span><br><span class="line">  <span class="comment">//多线程处理业务逻辑</span></span><br><span class="line">  ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());</span><br><span class="line">​</span><br><span class="line">​</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">MultiThreadHandler</span><span class="params">(SocketChannel socket, Selector sl)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">      <span class="keyword">this</span>.state = READING;</span><br><span class="line">      <span class="keyword">this</span>.socket = socket;</span><br><span class="line">      sk = socket.register(selector, SelectionKey.OP_READ);</span><br><span class="line">      sk.attach(<span class="keyword">this</span>);</span><br><span class="line">      socket.configureBlocking(<span class="keyword">false</span>);</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (state == READING) &#123;</span><br><span class="line">          read();</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (state == WRITING) &#123;</span><br><span class="line">          write();</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">read</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="comment">//任务异步处理</span></span><br><span class="line">      executorService.submit(() -&gt; process());</span><br><span class="line">​</span><br><span class="line">      <span class="comment">//下一步处理写事件</span></span><br><span class="line">      sk.interestOps(SelectionKey.OP_WRITE);</span><br><span class="line">      <span class="keyword">this</span>.state = WRITING;</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="comment">//任务异步处理</span></span><br><span class="line">      executorService.submit(() -&gt; process());</span><br><span class="line">​</span><br><span class="line">      <span class="comment">//下一步处理读事件</span></span><br><span class="line">      sk.interestOps(SelectionKey.OP_READ);</span><br><span class="line">      <span class="keyword">this</span>.state = READING;</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * task 业务处理</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">process</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="comment">//do IO ,task,queue something</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在 #read() 和 #write() 方法中，提交 executorService 线程池，进行处理。</p>
+<h2 id="多-Reactor-多线程模型"><a href="#多-Reactor-多线程模型" class="headerlink" title="多 Reactor 多线程模型"></a>多 Reactor 多线程模型</h2><p><img src="/img/8D476F61A64657CFD90DAC82C7D23D17.jpg" alt="插图"><br>第三种模型比起第二种模型，是将 Reactor 分成两部分：</p>
+<ol>
+<li><p>mainReactor 负责监听 ServerSocketChannel ，用来处理客户端新连接的建立，并将建立的客户端的 SocketChannel 指定注册给 subReactor 。</p>
+</li>
+<li><p>subReactor 维护自己的 Selector ，基于 mainReactor 建立的客户端的 SocketChannel 多路分离 IO 读写事件，读写网络数据。对于业务处理的功能，另外扔给 worker 线程池来完成。<br>MultiWorkThreadAcceptor 示例代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 多work 连接事件Acceptor,处理连接事件</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MultiWorkThreadAcceptor</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">​</span><br><span class="line">  <span class="comment">// cpu线程数相同多work线程</span></span><br><span class="line">  <span class="keyword">int</span> workCount = Runtime.getRuntime().availableProcessors();</span><br><span class="line">  SubReactor[] workThreadHandlers = <span class="keyword">new</span> SubReactor[workCount];</span><br><span class="line">  <span class="keyword">volatile</span> <span class="keyword">int</span> nextHandler = <span class="number">0</span>;</span><br><span class="line">​</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">MultiWorkThreadAcceptor</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">this</span>.init();</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      nextHandler = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; workThreadHandlers.length; i++) &#123;</span><br><span class="line">          <span class="keyword">try</span> &#123;</span><br><span class="line">              workThreadHandlers[i] = <span class="keyword">new</span> SubReactor();</span><br><span class="line">          &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">          SocketChannel c = serverSocket.accept();</span><br><span class="line">          <span class="keyword">if</span> (c != <span class="keyword">null</span>) &#123;<span class="comment">// 注册读写</span></span><br><span class="line">              <span class="keyword">synchronized</span> (c) &#123;</span><br><span class="line">                  <span class="comment">// 顺序获取SubReactor，然后注册channel </span></span><br><span class="line">                  SubReactor work = workThreadHandlers[nextHandler];</span><br><span class="line">                  work.registerChannel(c);</span><br><span class="line">                  nextHandler++;</span><br><span class="line">                  <span class="keyword">if</span> (nextHandler &gt;= workThreadHandlers.length) &#123;</span><br><span class="line">                      nextHandler = <span class="number">0</span>;</span><br><span class="line">                  &#125;</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<p>SubReactor 示例代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 多work线程处理读写业务逻辑</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SubReactor</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> Selector mySelector;</span><br><span class="line">​</span><br><span class="line">  <span class="comment">//多线程处理业务逻辑</span></span><br><span class="line">  <span class="keyword">int</span> workCount =Runtime.getRuntime().availableProcessors();</span><br><span class="line">  ExecutorService executorService = Executors.newFixedThreadPool(workCount);</span><br><span class="line">​</span><br><span class="line">​</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">SubReactor</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">      <span class="comment">// 每个SubReactor 一个selector </span></span><br><span class="line">      <span class="keyword">this</span>.mySelector = SelectorProvider.provider().openSelector();</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 注册chanel</span></span><br><span class="line"><span class="comment">    *</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@param</span> sc</span></span><br><span class="line"><span class="comment">    * <span class="doctag">@throws</span> Exception</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerChannel</span><span class="params">(SocketChannel sc)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">      sc.register(mySelector, SelectionKey.OP_READ | SelectionKey.OP_CONNECT);</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">          <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="comment">//每个SubReactor 自己做事件分派处理读写事件</span></span><br><span class="line">              selector.select();</span><br><span class="line">              Set&lt;SelectionKey&gt; keys = selector.selectedKeys();</span><br><span class="line">              Iterator&lt;SelectionKey&gt; iterator = keys.iterator();</span><br><span class="line">              <span class="keyword">while</span> (iterator.hasNext()) &#123;</span><br><span class="line">                  SelectionKey key = iterator.next();</span><br><span class="line">                  iterator.remove();</span><br><span class="line">                  <span class="keyword">if</span> (key.isReadable()) &#123;</span><br><span class="line">                      read();</span><br><span class="line">                  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (key.isWritable()) &#123;</span><br><span class="line">                      write();</span><br><span class="line">                  &#125;</span><br><span class="line">              &#125;</span><br><span class="line">​</span><br><span class="line">          &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">​</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">read</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="comment">//任务异步处理</span></span><br><span class="line">      executorService.submit(() -&gt; process());</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="comment">//任务异步处理</span></span><br><span class="line">      executorService.submit(() -&gt; process());</span><br><span class="line">  &#125;</span><br><span class="line">​</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * task 业务处理</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">process</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="comment">//do IO ,task,queue something</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从代码中，我们可以看到：</p>
+<p>mainReactor 主要用来处理网络 IO 连接建立操作，通常，mainReactor 只需要一个，因为它一个线程就可以处理。<br>subReactor 主要和建立起来的客户端的 SocketChannel 做数据交互和事件业务处理操作。通常，subReactor 的个数和 CPU 个数相等，每个 subReactor 独占一个线程来处理。<br>此种模式中，每个模块的工作更加专一，耦合度更低，性能和稳定性也大大的提升，支持的可并发客户端数量可达到上百万级别。<br>关于此种模式的应用，目前有很多优秀的框架已经在应用，比如 Mina 和 Netty 等等。上述中去掉线程池的第三种形式的变种，也是 Netty NIO 的默认模式。</p>
+<h1 id="Netty-中的应用"><a href="#Netty-中的应用" class="headerlink" title="Netty 中的应用"></a>Netty 中的应用</h1><h2 id="NIO-客户端"><a href="#NIO-客户端" class="headerlink" title="NIO 客户端"></a>NIO 客户端</h2><p>Netty NIO 客户端的示例代码中，和 EventLoop 相关的代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建一个 EventLoopGroup 对象</span></span><br><span class="line">EventLoopGroup group = <span class="keyword">new</span> NioEventLoopGroup();</span><br><span class="line"><span class="comment">// 创建 Bootstrap 对象</span></span><br><span class="line">Bootstrap b = <span class="keyword">new</span> Bootstrap();</span><br><span class="line"><span class="comment">// 设置使用的 EventLoopGroup</span></span><br><span class="line">b.group(group);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>对于 Netty NIO 客户端来说，仅创建一个 EventLoopGroup 。</li>
+</ul>
+<ul>
+<li>一个 EventLoop 可以对应一个 Reactor 。因为 EventLoopGroup 是 EventLoop 的分组，所以对等理解，EventLoopGroup 是一种 Reactor 的分组。</li>
+<li>一个 Bootstrap 的启动，只能发起对一个远程的地址。所以只会使用一个 NIO Selector ，也就是说仅使用一个 Reactor 。即使，我们在声明使用一个 EventLoopGroup ，该 EventLoopGroup 也只会分配一个 EventLoop 对 IO 事件进行处理。</li>
+<li>因为 Reactor 模型主要使用服务端的开发中，如果套用在 Netty NIO 客户端中，到底使用了哪一种模式呢？</li>
+<li>如果只有一个业务线程使用 Netty NIO 客户端，那么可以认为是【单 Reactor 单线程模型】。<ul>
+<li>如果有多个业务线程使用 Netty NIO 客户端，那么可以认为是【单 Reactor 多线程模型】。<br>那么 Netty NIO 客户端是否能够使用【多 Reactor 多线程模型】呢？😈 创建多个 Netty NIO 客户端，连接同一个服务端。那么多个 Netty 客户端就可以认为符合多 Reactor 多线程模型了。<br>一般情况下，我们不会这么干。</li>
+</ul>
+</li>
+</ul>
+<p>当然，实际也有这样的示例。例如 Dubbo 或 Motan 这两个 RPC 框架，支持通过配置，同一个 Consumer 对同一个 Provider 实例同时建立多个客户端连接。</p>
+<h2 id="NIO-服务端"><a href="#NIO-服务端" class="headerlink" title="NIO 服务端"></a>NIO 服务端</h2><p> Netty NIO 服务端的示例代码中，和 EventLoop 相关的代码：<br> <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">// 创建两个 EventLoopGroup 对象</span></span><br><span class="line">EventLoopGroup bossGroup = <span class="keyword">new</span> NioEventLoopGroup(<span class="number">1</span>); <span class="comment">// 创建 boss 线程组 用于服务端接受客户端的连接</span></span><br><span class="line">EventLoopGroup workerGroup = <span class="keyword">new</span> NioEventLoopGroup(); <span class="comment">// 创建 worker 线程组 用于进行 SocketChannel 的数据读写</span></span><br><span class="line"><span class="comment">// 创建 ServerBootstrap 对象</span></span><br><span class="line">ServerBootstrap b = <span class="keyword">new</span> ServerBootstrap();</span><br><span class="line"><span class="comment">// 设置使用的 EventLoopGroup</span></span><br><span class="line">b.group(bossGroup, workerGroup);</span><br></pre></td></tr></table></figure><br>对于 Netty NIO 服务端来说，创建两个 EventLoopGroup 。</p>
+<ol>
+<li>bossGroup 对应 Reactor 模式的 mainReactor ，用于服务端接受客户端的连接。比较特殊的是，传入了方法参数 nThreads = 1 ，表示只使用一个 EventLoop ，即只使用一个 Reactor 。这个也符合我们上面提到的，“通常，mainReactor 只需要一个，因为它一个线程就可以处理”。</li>
+</ol>
+<ol start="2">
+<li>workerGroup 对应 Reactor 模式的 subReactor ，用于进行 SocketChannel 的数据读写。对于 EventLoopGroup ，如果未传递方法参数 nThreads ，表示使用 CPU 个数 Reactor 。这个也符合我们上面提到的，“通常，subReactor 的个数和 CPU 个数相等，每个 subReactor 独占一个线程来处理”。</li>
+</ol>
+<p>因为使用两个 EventLoopGroup ，所以符合【多 Reactor 多线程模型】的多 Reactor 的要求。实际在使用时，workerGroup 在读完数据时，具体的业务逻辑处理，我们会提交到专门的业务逻辑线程池，例如在 Dubbo 或 Motan 这两个 RPC 框架中。这样一来，就完全符合【多 Reactor 多线程模型】。<br>那么可能有胖友可能和我有一样的疑问，bossGroup 如果配置多个线程，是否可以使用多个 mainReactor 呢？我们来分析一波，一个 Netty NIO 服务端同一时间，只能 bind 一个端口，那么只能使用一个 Selector 处理客户端连接事件。又因为，Selector 操作是非线程安全的，所以无法在多个 EventLoop ( 多个线程 )中，同时操作。所以这样就导致，即使 bossGroup 配置多个线程，实际能够使用的也就是一个线程。<br>那么如果一定一定一定要多个 mainReactor 呢？创建多个 Netty NIO 服务端，并绑定多个端口。</p>
+<p>参考资料</p>
+<ol>
+<li><a href="https://my.oschina.net/u/1859679/blog/1844109" target="_blank" rel="noopener">NIO系列——之Reactor模型</a></li>
+<li><a href="https://tech.youzan.com/yi-bu-wang-luo-mo-xing/" target="_blank" rel="noopener">异步网络模型</a> Ps：高端内容，推荐</li>
+<li><a href="https://en.wikipedia.org/wiki/Reactor_pattern" target="_blank" rel="noopener">Reactor_pattern-wiki</a></li>
+</ol>
+
+      </div>
+      <div class="post-copyright">
+    <p class="copyright-item">
+      <span>Author: </span>
+      <a href="http://yoursite.com">Adam Ubik</a>
+    </p>
+    <p class="copyright-item">
+      <span>Link: </span>
+      <a href="http://yoursite.com/2019/05/31/2019-08-01-Netty%20%E7%9A%84%20Readtor%20%E6%A8%A1%E5%9E%8B%E5%8F%8A%E5%BA%94%E7%94%A8/">http://yoursite.com/2019/05/31/2019-08-01-Netty%20%E7%9A%84%20Readtor%20%E6%A8%A1%E5%9E%8B%E5%8F%8A%E5%BA%94%E7%94%A8/</a>
+    </p>
+    <p class="copyright-item">
+      <span>License: </span><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/Netty/">Netty</a>
+            <a href="/tags/Reactor/">Reactor</a>
+            <a href="/tags/%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8/">多路复用</a>
+            </div>
+        
+        <nav class="post-nav"><a class="prev" href="/2019/06/02/2019-06-12-%E4%BD%BF%E7%94%A8%20Lambda%20%E8%A1%A8%E8%BE%BE%E5%BC%8F%E9%87%8D%E6%9E%84%20OO%20%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">Lambda 表达式重构 OO 设计模式</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    <a class="next" href="/2019/05/29/2019-05-23-JDK%E5%AE%9E%E7%8E%B0%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84RPC%E6%A1%86%E6%9E%B6/">
+        <span class="next-text nav-default">Java 实现最简单的RPC框架</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:Dingbiao1998@icloud.com" target="_blank" rel="noopener" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/Ubique0305" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2018 - 2019<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Adam Ubik</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>

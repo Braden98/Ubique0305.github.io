@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="Ubik的技术分享与学习记录"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/default" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="http://yoursite.com/page/3/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" /><script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":true};
+</script>
+
+    <title>Ubik's blog</title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Ubik's blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">Home
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">Archives
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Ubik's blog</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            Home
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            Archives
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            Tags
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            About
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><section id="posts" class="posts"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title"><a class="post-link" href="/2019/05/29/2019-05-23-JDK%E5%AE%9E%E7%8E%B0%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84RPC%E6%A1%86%E6%9E%B6/">Java 实现最简单的RPC框架</a>
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-05-29
+        </span></div>
+    </header>
+
+    <div class="post-content"><h1 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h1><p>RPC(Remote Procedure Call)是一个通信协议，允许像调用本地服务一样调用远程服务。<br>根据中间件课程和我的理解，RPC主要由三到四个 Part 组成</p>
+<ol>
+<li>序列化</li>
+<li>通信协议</li>
+<li>代理</li>
+<li>在某些介绍中，还增加了“过程（服务）定位”这一方面，也就是在确定通信方式后，IP、Port及方法名确定的具体过程。原理图如下</li>
+</ol>
+<p><img src="/img/15585879760934.jpg" alt="插图"><br>总的来说，就是Client找到目标（Part4）和Server在建立连接（Part2）后，前者向后者发送参数，底层传输是二进制的，因此需要序列化协议（Part1）。服务端拿到参数后需要反序列化后找到对应方法进行调用（代理过程）（Part3），得到结果后返回给服务器。</p>
+<p>RPC协议有很多，如CORBA，Thrift、Java RMI、Hessian甚至REST API。我就用CORBA 写过一个分布式文件下载系统（课程小项目，写起来很Dirty，我选择它的进化版本 Thrift，哈哈）</p>
+<h1 id="为何要-RPC-？"><a href="#为何要-RPC-？" class="headerlink" title="为何要 RPC ？"></a>为何要 RPC ？</h1><p>但是在上中间件课程的时候我就在想：RPC出现的意义是什么？只要有网络进行类似 C/S 的问题/结果传输就好了呀！<br>最终通过询问老师和思考，得出问题答案：</p>
+<ol>
+<li>简化通信流程</li>
+<li>远程调用时，要能够像本地调用一样方便，让调用者感知不到远程调用的逻辑<br>举个例子，如果直接按照 C/S 模式，需要冗长的编解码协议报文，而且这个过程对于用户不是透明的，需要你自己去做好报文。但通过 RPC，你可以方便简单地调用远程方法，在分布式应用中，因为需要横向扩展，这点就更为重要。</li>
+</ol>
+<p>纠结RPC的组成部分并无意义，因为无论是C/S模式还是RPC，其核心：信息传输，具体工作：编解码和报文交互并没有任何区别。</p>
+<h1 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h1><p>所以，下文我将按照之前我的理解写一个最简单的RPC框架。其序列化采用Java自带的序列化方法，通信协议采用基于 TCP 的 Socket 通信，而代理则采用 Java 自带的 JDK 动态代理。</p>
+<p>不同于 Dubbo、ICE 等工业级的RPC框架，我的简单的 RPC 框架分为三部分，</p>
+<ol>
+<li>服务提供者，运行在服务器端，提供服务接口定义与服务实现类。</li>
+<li>服务中心，运行在服务器端，负责将本地服务发布成远程服务，管理远程服务，提供给服务消费者使用。</li>
+<li>服务消费者，运行在客户端，通过远程代理对象调用远程服务。</li>
+</ol>
+<p>定义一个简单的服务接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">HelloService</span> </span>&#123;</span><br><span class="line">    <span class="function">String <span class="title">sayHi</span><span class="params">(String name)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实现这个服务接口，也即服务提供者</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloServiceImpl</span> <span class="keyword">implements</span> <span class="title">HelloService</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">sayHi</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Hi, "</span> + name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>服务中心（服务注册耦合到这里实现）实现TCP监听</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        ServerSocket server = <span class="keyword">new</span> ServerSocket();</span><br><span class="line">        server.bind(<span class="keyword">new</span> InetSocketAddress(port));</span><br><span class="line">        System.out.println(<span class="string">"start server"</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">                <span class="comment">// 1.监听客户端的TCP连接，接到TCP连接后将其封装成task，由线程池执行</span></span><br><span class="line">                executor.execute(<span class="keyword">new</span> ServiceTask(server.accept()));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            server.close();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>服务中心反射调用服务实现者获取结果，然后序列化返回给客户端</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">// 2.将客户端发送的码流反序列化成对象，反射调用服务实现者，获取执行结果</span></span><br><span class="line">                input = <span class="keyword">new</span> ObjectInputStream(clent.getInputStream());</span><br><span class="line">                String serviceName = input.readUTF();</span><br><span class="line">                String methodName = input.readUTF();</span><br><span class="line">                Class&lt;?&gt;[] parameterTypes = (Class&lt;?&gt;[]) input.readObject();</span><br><span class="line">                Object[] arguments = (Object[]) input.readObject();</span><br><span class="line">                Class serviceClass = serviceRegistry.get(serviceName);</span><br><span class="line">                <span class="keyword">if</span> (serviceClass == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> ClassNotFoundException(serviceName + <span class="string">" not found"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                Method method = serviceClass.getMethod(methodName, parameterTypes);</span><br><span class="line">                Object result = method.invoke(serviceClass.newInstance(), arguments);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// 3.将执行结果反序列化，通过socket发送给客户端</span></span><br><span class="line">                output = <span class="keyword">new</span> ObjectOutputStream(clent.getOutputStream());</span><br><span class="line">                output.writeObject(result);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br></pre></td></tr></table></figure>
+<p>客户端通过JDK动态代理调用远程方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">T <span class="title">getRemoteProxyObj</span><span class="params">(<span class="keyword">final</span> Class&lt;?&gt; serviceInterface, <span class="keyword">final</span> InetSocketAddress addr)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 1.将本地的接口调用转换成JDK的动态代理，在动态代理中实现接口的远程调用</span></span><br><span class="line">        <span class="keyword">return</span> (T) Proxy.newProxyInstance(serviceInterface.getClassLoader(), <span class="keyword">new</span> Class&lt;?&gt;[]&#123;serviceInterface&#125;,</span><br><span class="line">                <span class="keyword">new</span> InvocationHandler() &#123;</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">                        Socket socket = <span class="keyword">null</span>;</span><br><span class="line">                        ObjectOutputStream output = <span class="keyword">null</span>;</span><br><span class="line">                        ObjectInputStream input = <span class="keyword">null</span>;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            <span class="comment">// 2.创建Socket客户端，根据指定地址连接远程服务提供者</span></span><br><span class="line">                            socket = <span class="keyword">new</span> Socket();</span><br><span class="line">                            socket.connect(addr);</span><br><span class="line"></span><br><span class="line">                            <span class="comment">// 3.将远程服务调用所需的接口类、方法名、参数列表等编码后发送给服务提供者</span></span><br><span class="line">                            output = <span class="keyword">new</span> ObjectOutputStream(socket.getOutputStream());</span><br><span class="line">                            output.writeUTF(serviceInterface.getName());</span><br><span class="line">                            output.writeUTF(method.getName());</span><br><span class="line">                            output.writeObject(method.getParameterTypes());</span><br><span class="line">                            output.writeObject(args);</span><br><span class="line"></span><br><span class="line">                            <span class="comment">// 4.同步阻塞等待服务器返回应答，获取应答后返回</span></span><br><span class="line">                            input = <span class="keyword">new</span> ObjectInputStream(socket.getInputStream());</span><br><span class="line">                            <span class="keyword">return</span> input.readObject();</span><br><span class="line">                        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                            <span class="keyword">if</span> (socket != <span class="keyword">null</span>) &#123;</span><br><span class="line">                                socket.close();</span><br><span class="line">                            &#125;</span><br><span class="line">                            <span class="keyword">if</span> (output != <span class="keyword">null</span>) &#123;</span><br><span class="line">                                output.close();</span><br><span class="line">                            &#125;</span><br><span class="line">                            <span class="keyword">if</span> (input != <span class="keyword">null</span>) &#123;</span><br><span class="line">                                input.close();</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br></pre></td></tr></table></figure>
+<p>测试类，写好远程调用的信息后通过 Socket 发送给服务端，然后同步阻塞等待服务器 Response</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 2.创建Socket客户端，根据指定地址连接远程服务提供者</span></span><br><span class="line">                           socket = <span class="keyword">new</span> Socket();</span><br><span class="line">                           socket.connect(addr);</span><br><span class="line"></span><br><span class="line">                           <span class="comment">// 3.将远程服务调用所需的接口类、方法名、参数列表等编码后发送给服务提供者</span></span><br><span class="line">                           output = <span class="keyword">new</span> ObjectOutputStream(socket.getOutputStream());</span><br><span class="line">                           output.writeUTF(serviceInterface.getName());</span><br><span class="line">                           output.writeUTF(method.getName());</span><br><span class="line">                           output.writeObject(method.getParameterTypes());</span><br><span class="line">                           output.writeObject(args);</span><br><span class="line"></span><br><span class="line">                           <span class="comment">// 4.同步阻塞等待服务器返回应答，获取应答后返回</span></span><br><span class="line">                           input = <span class="keyword">new</span> ObjectInputStream(socket.getInputStream());</span><br><span class="line">                           <span class="keyword">return</span> input.readObject();</span><br></pre></td></tr></table></figure>
+<p><a href="https://github.com/Ubique0305/RPC/tree/master/Easy" target="_blank" rel="noopener">完整代码参考Github</a></p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><a href="https://www.cs.rutgers.edu/~pxk/417/notes/03-rpc.html" target="_blank" rel="noopener">Remote Procedure Calls By Paul Krzyzanowski<br>October 2 2017</a></li>
+<li><a href="https://cloud.tencent.com/developer/article/1057784" target="_blank" rel="noopener">进阶实现（加了 netty 做通信和 spring 做依赖管理）</a></li>
+</ol>
+
+        </div></article>
+      <article class="post">
+    <header class="post-header">
+      <h1 class="post-title"><a class="post-link" href="/2019/05/18/2019-07-22-Netty%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E6%A3%80%E6%B5%8B/">Netty 的内存泄漏检测</a>
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-05-18
+        </span></div>
+    </header>
+
+    <div class="post-content"><p>自从 Netty 4 开始，对象的生命周期由它们的引用计数( reference counts )管理，而不是由垃圾收集器( garbage collector )管理了，ByteBuf 也不例外，作为对 Java 原生 NIO ByteBuffer 的优秀封装和IO中使用最频繁的数据结构，是最值得注意的。</p>
+<h1 id="ReferenceCounted"><a href="#ReferenceCounted" class="headerlink" title="ReferenceCounted"></a>ReferenceCounted</h1><p>在 Netty 中，通过 io.netty.util.ReferenceCounted 接口，定义了引用计数相关的一系列操作。代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ReferenceCounted</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获得引用计数</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Returns the reference count of this object.  If &#123;<span class="doctag">@code</span> 0&#125;, it means this object has been deallocated.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">refCnt</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 增加引用计数 1</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Increases the reference count by &#123;<span class="doctag">@code</span> 1&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">ReferenceCounted <span class="title">retain</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 增加引用计数 n</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Increases the reference count by the specified &#123;<span class="doctag">@code</span> increment&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">ReferenceCounted <span class="title">retain</span><span class="params">(<span class="keyword">int</span> increment)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 等价于调用 `#touch(null)` 方法，即 hint 方法参数传递为 null 。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Records the current access location of this object for debugging purposes.</span></span><br><span class="line"><span class="comment">     * If this object is determined to be leaked, the information recorded by this operation will be provided to you</span></span><br><span class="line"><span class="comment">     * via &#123;<span class="doctag">@link</span> ResourceLeakDetector&#125;.  This method is a shortcut to &#123;<span class="doctag">@link</span> #touch(Object) touch(null)&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">ReferenceCounted <span class="title">touch</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 出于调试目的,用一个额外的任意的(arbitrary)信息记录这个对象的当前访问地址. 如果这个对象被检测到泄露了, 这个操作记录的信息将通过ResourceLeakDetector 提供.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Records the current access location of this object with an additional arbitrary information for debugging</span></span><br><span class="line"><span class="comment">     * purposes.  If this object is determined to be leaked, the information recorded by this operation will be</span></span><br><span class="line"><span class="comment">     * provided to you via &#123;<span class="doctag">@link</span> ResourceLeakDetector&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">ReferenceCounted <span class="title">touch</span><span class="params">(Object hint)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 减少引用计数 1 。</span></span><br><span class="line"><span class="comment">     * 当引用计数为 0 时，释放</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Decreases the reference count by &#123;<span class="doctag">@code</span> 1&#125; and deallocates this object if the reference count reaches at</span></span><br><span class="line"><span class="comment">     * &#123;<span class="doctag">@code</span> 0&#125;.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> true&#125; if and only if the reference count became &#123;<span class="doctag">@code</span> 0&#125; and this object has been deallocated</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">release</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 减少引用计数 n 。</span></span><br><span class="line"><span class="comment">     *  当引用计数为 0 时，释放</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Decreases the reference count by the specified &#123;<span class="doctag">@code</span> decrement&#125; and deallocates this object if the reference</span></span><br><span class="line"><span class="comment">     * count reaches at &#123;<span class="doctag">@code</span> 0&#125;.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> true&#125; if and only if the reference count became &#123;<span class="doctag">@code</span> 0&#125; and this object has been deallocated</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">release</span><span class="params">(<span class="keyword">int</span> decrement)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>refCnt()</code>、<code>retain(...)</code>、<code>release(...)</code> 三种方法比较好理解，对引用指数的获取与增减。<br><code>touch(...)</code> 方法主动记录一个 hint 给 ResourceLeakDetector ，方便我们在发现内存泄露有更多的信息进行排查。</p>
+<p><code>ReferenceCounted</code> 的直接子类 / 子接口有两个 ：</p>
+<ul>
+<li><code>io.netty.buffer.ByteBuf</code> 。所以，所有 ByteBuf 实现类，都支持引用计数的操作。</li>
+<li><code>io.netty.util.AbstractReferenceCounted</code> ，ReferenceCounted 的抽象实现类。它的子类实现类，主要是除了 ByteBuf 之外，需要引用计数的操作的类。例如：AbstractHttpData、DefaultFileRegion 等等。</li>
+</ul>
+<h1 id="ByteBuf"><a href="#ByteBuf" class="headerlink" title="ByteBuf"></a>ByteBuf</h1><p>ByteBuf 虽然继承了 ReferenceCounted 接口，但是并未实现相应的方法。而是实现了如下接口</p>
+<ul>
+<li><p><code>AbstractReferenceCountedByteBuf</code> ，实现引用计数的获取与增减的操作。</p>
+</li>
+<li><p><code>WrappedByteBuf</code> ，实现对 ByteBuf 的装饰器实现类。</p>
+</li>
+<li><p><code>WrappedCompositeByteBuf</code> ，实现对 CompositeByteBuf 的装饰器实现类。</p>
+</li>
+<li><p><code>SimpleLeakAwareByteBuf</code>、<code>SimpleLeakAwareCompositeByteBuf</code> ，实现了 SIMPLE 级别的内存泄露检测。</p>
+</li>
+<li><p><code>AdvancedLeakAwareByteBuf</code>、<code>AdvancedLeakAwareCompositeByteBuf</code> ，实现了 ADVANCED 和 PARANOID 级别的内存泄露检测。</p>
+</li>
+<li><p><code>UnreleasableByteBuf</code> ，用于阻止他人对装饰的 ByteBuf 的销毁，避免被错误销毁掉。</p>
+</li>
+</ul>
+<h2 id="创建-LeakAware-ByteBuf-对象"><a href="#创建-LeakAware-ByteBuf-对象" class="headerlink" title="创建 LeakAware ByteBuf 对象"></a>创建 LeakAware ByteBuf 对象</h2><p>ByteBufAllocator 可用于创建 ByteBuf 对象。创建的过程中，它会调用 <code>toLeakAwareBuffer(...)</code> 方法，将 ByteBuf 装饰成 LeakAware ( 可检测内存泄露 )的 ByteBuf 对象，代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AbstractByteBufAllocator.java</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">static</span> ByteBuf <span class="title">toLeakAwareBuffer</span><span class="params">(ByteBuf buf)</span> </span>&#123;</span><br><span class="line">    ResourceLeakTracker&lt;ByteBuf&gt; leak;</span><br><span class="line">    <span class="keyword">switch</span> (ResourceLeakDetector.getLevel()) &#123;</span><br><span class="line">        <span class="keyword">case</span> SIMPLE:</span><br><span class="line">            leak = AbstractByteBuf.leakDetector.track(buf);</span><br><span class="line">            <span class="keyword">if</span> (leak != <span class="keyword">null</span>) &#123;</span><br><span class="line">                buf = <span class="keyword">new</span> SimpleLeakAwareByteBuf(buf, leak);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> ADVANCED:</span><br><span class="line">        <span class="keyword">case</span> PARANOID:</span><br><span class="line">            leak = AbstractByteBuf.leakDetector.track(buf);</span><br><span class="line">            <span class="keyword">if</span> (leak != <span class="keyword">null</span>) &#123;</span><br><span class="line">                buf = <span class="keyword">new</span> AdvancedLeakAwareByteBuf(buf, leak);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> buf;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">static</span> CompositeByteBuf <span class="title">toLeakAwareBuffer</span><span class="params">(CompositeByteBuf buf)</span> </span>&#123;</span><br><span class="line">    ResourceLeakTracker&lt;ByteBuf&gt; leak;</span><br><span class="line">    <span class="keyword">switch</span> (ResourceLeakDetector.getLevel()) &#123;</span><br><span class="line">        <span class="keyword">case</span> SIMPLE:</span><br><span class="line">            leak = AbstractByteBuf.leakDetector.track(buf);</span><br><span class="line">            <span class="keyword">if</span> (leak != <span class="keyword">null</span>) &#123;</span><br><span class="line">                buf = <span class="keyword">new</span> SimpleLeakAwareCompositeByteBuf(buf, leak);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> ADVANCED:</span><br><span class="line">        <span class="keyword">case</span> PARANOID:</span><br><span class="line">            leak = AbstractByteBuf.leakDetector.track(buf);</span><br><span class="line">            <span class="keyword">if</span> (leak != <span class="keyword">null</span>) &#123;</span><br><span class="line">                buf = <span class="keyword">new</span> AdvancedLeakAwareCompositeByteBuf(buf, leak);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> buf;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>有两个 <code>toLeakAwareBuffer(...)</code> 方法，分别对应带 “Composite” 的 组合 ByteBuf 类，和不带 Composite 普通 ByteBuf 类。因为这个不同，所以前者创建的是 <code>SimpleLeakAwareCompositeByteBuf</code> / <code>AdvancedLeakAwareCompositeByteBuf</code> 对象，后者创建的是 <code>SimpleLeakAwareByteBuf</code> / <code>AdvancedLeakAwareByteBuf</code> 对象。</li>
+<li>当然，从总的逻辑来看，是一致的：<ul>
+<li>SIMPLE 级别，创建 SimpleLeakAwareByteBuf 或 SimpleLeakAwareCompositeByteBuf 对象。</li>
+<li>ADVANCED 和 PARANOID 级别，创建 AdvancedLeakAwareByteBuf 或者 AdvancedLeakAwareCompositeByteBuf 对象。</li>
+</ul>
+</li>
+<li>是否需要创建 LeakAware ByteBuf 对象，有一个前提，调用 <code>ResourceLeakDetector.track(ByteBuf)</code> 方法，返回了 ResourceLeakTracker 对象。<ul>
+<li>虽然说， ADVANCED 和 PARANOID 级别，都使用了 AdvancedLeakAwareByteBuf 或 <code>AdvancedLeakAwareCompositeByteBuf</code> 对象，但是它们的差异是：<ul>
+<li>PARANOID 级别，一定返回 ResourceLeakTracker 对象；</li>
+<li>ADVANCED 级别，随机概率( 默认为 1% 左右 )返回 ResourceLeakTracker 对象。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="AbstractReferenceCountedByteBuf"><a href="#AbstractReferenceCountedByteBuf" class="headerlink" title="AbstractReferenceCountedByteBuf"></a>AbstractReferenceCountedByteBuf</h2><p><code>io.netty.buffer.AbstractReferenceCountedByteBuf</code> ，实现引用计数的获取与增减的操作。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * &#123;<span class="doctag">@link</span> #refCnt&#125; 的更新器</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> AtomicIntegerFieldUpdater&lt;AbstractReferenceCountedByteBuf&gt; refCntUpdater = AtomicIntegerFieldUpdater.newUpdater(AbstractReferenceCountedByteBuf.class, <span class="string">"refCnt"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 引用计数</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">int</span> refCnt;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="title">AbstractReferenceCountedByteBuf</span><span class="params">(<span class="keyword">int</span> maxCapacity)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 设置最大容量</span></span><br><span class="line">    <span class="keyword">super</span>(maxCapacity);</span><br><span class="line">    <span class="comment">// 初始 refCnt 为 1</span></span><br><span class="line">    refCntUpdater.set(<span class="keyword">this</span>, <span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>计数器基于 <code>AtomicIntegerFieldUpdater</code> ，为什么不直接用 <code>AtomicInteger</code> ？因为 ByteBuf 对象很多，如果都把 int 包一层 AtomicInteger 花销较大，而AtomicIntegerFieldUpdater 只需要一个全局的静态变量。</p>
+<h2 id="SimpleLeakAwareByteBuf"><a href="#SimpleLeakAwareByteBuf" class="headerlink" title="SimpleLeakAwareByteBuf"></a>SimpleLeakAwareByteBuf</h2><p><code>io.netty.buffer.SimpleLeakAwareByteBuf</code> ，继承 WrappedByteBuf 类，Simple 级别的 LeakAware ByteBuf 实现类。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 关联的 ByteBuf 对象</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * This object's is associated with the &#123;<span class="doctag">@link</span> ResourceLeakTracker&#125;. When &#123;<span class="doctag">@link</span> ResourceLeakTracker#close(Object)&#125;</span></span><br><span class="line"><span class="comment"> * is called this object will be used as the argument. It is also assumed that this object is used when</span></span><br><span class="line"><span class="comment"> * &#123;<span class="doctag">@link</span> ResourceLeakDetector#track(Object)&#125; is called to create &#123;<span class="doctag">@link</span> #leak&#125;.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> ByteBuf trackedByteBuf;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * ResourceLeakTracker 对象</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">final</span> ResourceLeakTracker&lt;ByteBuf&gt; leak;</span><br><span class="line"></span><br><span class="line">SimpleLeakAwareByteBuf(ByteBuf wrapped, ByteBuf trackedByteBuf, ResourceLeakTracker&lt;ByteBuf&gt; leak) &#123; <span class="comment">// &lt;2&gt;</span></span><br><span class="line">    <span class="keyword">super</span>(wrapped);</span><br><span class="line">    <span class="keyword">this</span>.trackedByteBuf = ObjectUtil.checkNotNull(trackedByteBuf, <span class="string">"trackedByteBuf"</span>);</span><br><span class="line">    <span class="keyword">this</span>.leak = ObjectUtil.checkNotNull(leak, <span class="string">"leak"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">SimpleLeakAwareByteBuf(ByteBuf wrapped, ResourceLeakTracker&lt;ByteBuf&gt; leak) &#123; <span class="comment">// &lt;1&gt;</span></span><br><span class="line">    <span class="keyword">this</span>(wrapped, wrapped, leak);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>leak 属性，ResourceLeakTracker 对象。<br>trackedByteBuf 属性，真正关联 leak 的 ByteBuf 对象。<br>对于构造方法 &lt;1&gt; ，wrapped 和 trackedByteBuf 相同。<br>对于构造方法 &lt;2&gt; ，wrapped 和 trackedByteBuf 一般不同。</p>
+<h1 id="ResourceLeakDetector-内存泄露检测器"><a href="#ResourceLeakDetector-内存泄露检测器" class="headerlink" title="ResourceLeakDetector 内存泄露检测器"></a>ResourceLeakDetector 内存泄露检测器</h1><p>ResourceLeakDetector 为了检测内存是否泄漏，使用了 WeakReference( 弱引用 )和 ReferenceQueue( 引用队列 )，过程如下：</p>
+<ol>
+<li>根据检测级别和采样率的设置，在需要时为需要检测的 ByteBuf 创建WeakReference 引用。</li>
+<li>当 JVM 回收掉 ByteBuf 对象时，JVM 会将 WeakReference 放入ReferenceQueue 队列中。</li>
+<li>通过对 ReferenceQueue 中 WeakReference 的检查，判断在 GC 前是否有释放ByteBuf 的资源，就可以知道是否有资源释放。</li>
+</ol>
+<p>该类中枚举了4个内存泄漏等级，默认级别为 DEFAULT_LEVEL = Level.SIMPLE 。<br>四个等级如下</p>
+<ol>
+<li>禁用（DISABLED） - 完全禁止泄露检测，省点消耗。</li>
+</ol>
+<ol start="2">
+<li>简单（SIMPLE） - 默认等级，告诉我们取样的1%的ByteBuf是否发生了泄露，但总共一次只打印一次，看不到就没有了。</li>
+<li>高级（ADVANCED） - 告诉我们取样的1%的ByteBuf发生泄露的地方。每种类型的泄漏（创建的地方与访问路径一致）只打印一次。对性能有影响。</li>
+<li>偏执（PARANOID） - 跟高级选项类似，但此选项检测所有ByteBuf，而不仅仅是取样的那1%。对性能有绝大的影响。</li>
+</ol>
+<h1 id="DefaultResourceLeak"><a href="#DefaultResourceLeak" class="headerlink" title="DefaultResourceLeak"></a>DefaultResourceLeak</h1><p>DefaultResourceLeak ，继承 java.lang.ref.WeakReference 类，实现 ResourceLeakTracker 接口，默认 ResourceLeakTracker 实现类。同时，它是 ResourceLeakDetector 内部静态类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ResourceLeakDetector</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">DefaultResourceLeak</span>&lt;<span class="title">T</span>&gt; <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">Object</span>&gt; <span class="keyword">implements</span> <span class="title">ResourceLeakTracker</span>&lt;<span class="title">T</span>&gt;, <span class="title">ResourceLeak</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="引用队列-Reference-Queue"><a href="#引用队列-Reference-Queue" class="headerlink" title="引用队列(Reference Queue)"></a>引用队列(Reference Queue)</h2><p>一旦弱引用对象开始返回null，该弱引用指向的对象就被标记成了垃圾。而这个弱引用对象（非其指向的对象）就没有什么用了。通常这时候需要进行一些清理工作。比如WeakHashMap会在这时候移除没用的条目来避免保存无限制增长的没有意义的弱引用。<br>引用队列可以很容易地实现跟踪不需要的引用。当你在构造WeakReference时传入一个ReferenceQueue对象，当该引用指向的对象被标记为垃圾的时候，这个引用对象会自动地加入到引用队列里面。接下来，你就可以在固定的周期，处理传入的引用队列，比如做一些清理工作来处理这些没有用的引用对象。</p>
+<p>也就是说，referent 被标记为垃圾的时候，它对应的 WeakReference 对象会被添加到 refQueue 队列中。在此处，即将 DefaultResourceLeak 添加到 referent 队列中。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><a href="https://blog.csdn.net/prestigeding/article/details/54233327" target="_blank" rel="noopener">Netty学习之旅—-源码分析Netty内存泄漏检测</a></li>
+<li><a href="http://calvin1978.blogcn.com/articles/netty-leak.html" target="_blank" rel="noopener">Netty之有效规避内存泄漏</a></li>
+</ol>
+
+        </div></article>
+      <article class="post">
+    <header class="post-header">
+      <h1 class="post-title"><a class="post-link" href="/2019/05/18/2019-05-26-%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93-%E5%AE%9E%E8%B7%B5/">代码整洁之道-实践</a>
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-05-18
+        </span></div>
+    </header>
+
+    <div class="post-content"><p><img src="/img/code-clean-practice.jpg" alt="插图"></p>
+<h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p> 通过阅读一个 Args 程序，了解整洁代码应该是什么样的（极好的可读性），然后通过与重构之前的肮脏代码对比，了解要改进的地方。最后通过作者的先复杂化导致出现代码变脏，随后建立规程优化代码的历程，了解代码整洁的最佳实践。</p>
+<h1 id="系统使用样例"><a href="#系统使用样例" class="headerlink" title="系统使用样例"></a>系统使用样例</h1><p> 帮助你理解 Args 程序的功能：通过 Args()构造参数创建实体，解析之后可以使用Get* 用参数名称获取参数值</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Args arg = <span class="keyword">new</span> Args(<span class="string">"l,p#,d*"</span>, args);</span><br><span class="line">        <span class="keyword">boolean</span> logging = arg.getBoolean(<span class="string">'l'</span>);</span><br><span class="line">        <span class="keyword">int</span> port = arg.getInt(<span class="string">'p'</span>);</span><br><span class="line">        String directory = arg.getString(<span class="string">'d'</span>);</span><br><span class="line">        executeApplication(logging, port, directory);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ArgsException e) &#123;</span><br><span class="line">        System.out.printf(<span class="string">"Argument error: %s\n"</span>, e.errorMessage());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Clean-Code"><a href="#Clean-Code" class="headerlink" title="Clean Code"></a>Clean Code</h1><p>上边是一个命令行参数解析程序，我们用这个例子来演示逐步改进，它非常易于使用，只用简单地用输入参数和格式化字符串构造Args类，再向Args对象查询参数值即可。下边是其最终实现。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> com.objectmentor.utilities.args.ArgsException.ErrorCode.*;</span><br><span class="line"><span class="keyword">import</span> java.util.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Args</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Map&lt;Character, ArgumentMarshaler&gt; marshalers;</span><br><span class="line">    <span class="keyword">private</span> Set&lt;Character&gt; argsFound;</span><br><span class="line">    <span class="keyword">private</span> ListIterator&lt;String&gt; currentArgument;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Args</span><span class="params">(String schema, String[] args)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        marshalers = <span class="keyword">new</span> HashMap&lt;Character, ArgumentMarshaler&gt;();</span><br><span class="line">        argsFound = <span class="keyword">new</span> HashSet&lt;Character&gt;();</span><br><span class="line"></span><br><span class="line">        parseSchema(schema);</span><br><span class="line">        parseArgumentStrings(Arrays.asList(args));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseSchema</span><span class="params">(String schema)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (String element : schema.split(<span class="string">","</span>))</span><br><span class="line">            <span class="keyword">if</span> (element.length() &gt; <span class="number">0</span>)</span><br><span class="line">                parseSchemaElement(element.trim());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseSchemaElement</span><span class="params">(String element)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        <span class="keyword">char</span> elementId = element.charAt(<span class="number">0</span>);</span><br><span class="line">        String elementTail = element.substring(<span class="number">1</span>);</span><br><span class="line">        validateSchemaElementId(elementId);</span><br><span class="line">        <span class="keyword">if</span> (elementTail.length() == <span class="number">0</span>)</span><br><span class="line">            marshalers.put(elementId, <span class="keyword">new</span> BooleanArgumentMarshaler());</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (elementTail.equals(<span class="string">"*"</span>))</span><br><span class="line">            marshalers.put(elementId, <span class="keyword">new</span> StringArgumentMarshaler());</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (elementTail.equals(<span class="string">"#"</span>))</span><br><span class="line">            marshalers.put(elementId, <span class="keyword">new</span> IntegerArgumentMarshaler());</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (elementTail.equals(<span class="string">"##"</span>))</span><br><span class="line">            marshalers.put(elementId, <span class="keyword">new</span> DoubleArgumentMarshaler());</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (elementTail.equals(<span class="string">"[*]"</span>))</span><br><span class="line">            marshalers.put(elementId, <span class="keyword">new</span> StringArrayArgumentMarshaler());</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ArgsException(INVALID_ARGUMENT_FORMAT, elementId, elementTail);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">validateSchemaElementId</span><span class="params">(<span class="keyword">char</span> elementId)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!Character.isLetter(elementId))</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ArgsException(INVALID_ARGUMENT_NAME, elementId, <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseArgumentStrings</span><span class="params">(List&lt;String&gt; argsList)</span> <span class="keyword">throws</span> ArgsException</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (currentArgument = argsList.listIterator(); currentArgument.hasNext();)</span><br><span class="line">        &#123;</span><br><span class="line">            String argString = currentArgument.next();</span><br><span class="line">            <span class="keyword">if</span> (argString.startsWith(<span class="string">"-"</span>)) &#123;</span><br><span class="line">                parseArgumentCharacters(argString.substring(<span class="number">1</span>));</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                currentArgument.previous();</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseArgumentCharacters</span><span class="params">(String argChars)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; argChars.length(); i++)</span><br><span class="line">            parseArgumentCharacter(argChars.charAt(i));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseArgumentCharacter</span><span class="params">(<span class="keyword">char</span> argChar)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        ArgumentMarshaler m = marshalers.get(argChar);</span><br><span class="line">        <span class="keyword">if</span> (m == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ArgsException(UNEXPECTED_ARGUMENT, argChar, <span class="keyword">null</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            argsFound.add(argChar);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                m.set(currentArgument);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (ArgsException e) &#123;</span><br><span class="line">                e.setErrorArgumentId(argChar);</span><br><span class="line">                <span class="keyword">throw</span> e;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">has</span><span class="params">(<span class="keyword">char</span> arg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> argsFound.contains(arg);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">nextArgument</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> currentArgument.nextIndex();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">getBoolean</span><span class="params">(<span class="keyword">char</span> arg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> BooleanArgumentMarshaler.getValue(marshalers.get(arg));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getString</span><span class="params">(<span class="keyword">char</span> arg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> StringArgumentMarshaler.getValue(marshalers.get(arg));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getInt</span><span class="params">(<span class="keyword">char</span> arg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> IntegerArgumentMarshaler.getValue(marshalers.get(arg));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">double</span> <span class="title">getDouble</span><span class="params">(<span class="keyword">char</span> arg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> DoubleArgumentMarshaler.getValue(marshalers.get(arg));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String[] getStringArray(<span class="keyword">char</span> arg) &#123;</span><br><span class="line">        <span class="keyword">return</span> StringArrayArgumentMarshaler.getValue(marshalers.get(arg));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ArgumentMarshaler-接口"><a href="#ArgumentMarshaler-接口" class="headerlink" title="ArgumentMarshaler 接口"></a>ArgumentMarshaler 接口</h2><p>很明显 ArgumentMarshaler 接口在 Map 中充当 Value，他的接口实现如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ArgumentMarshaler</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">set</span><span class="params">(Iterator&lt;String&gt; currentArgument)</span> <span class="keyword">throws</span> ArgsException</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//BooleanArgumentMarshaler.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BooleanArgumentMarshaler</span> <span class="keyword">implements</span> <span class="title">ArgumentMarshaler</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> booleanValue = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(Iterator&lt;String&gt; currentArgument)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        booleanValue = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">getValue</span><span class="params">(ArgumentMarshaler am)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (am != <span class="keyword">null</span> &amp;&amp; am <span class="keyword">instanceof</span> BooleanArgumentMarshaler)</span><br><span class="line">            <span class="keyword">return</span> ((BooleanArgumentMarshaler) am).booleanValue;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//StringArgumentMarshaler.java</span></span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> com.objectmentor.utilities.args.ArgsException.ErrorCode.*;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StringArgumentMarshaler</span> <span class="keyword">implements</span> <span class="title">ArgumentMarshaler</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String stringValue = <span class="string">""</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(Iterator&lt;String&gt; currentArgument)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            stringValue = currentArgument.next();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (NoSuchElementException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ArgsException(MISSING_STRING);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">getValue</span><span class="params">(ArgumentMarshaler am)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (am != <span class="keyword">null</span> &amp;&amp; am <span class="keyword">instanceof</span> StringArgumentMarshaler)</span><br><span class="line">            <span class="keyword">return</span> ((StringArgumentMarshaler) am).stringValue;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="ArgsException"><a href="#ArgsException" class="headerlink" title="ArgsException"></a>ArgsException</h2><p>除此之外，还有ArgsException的定义：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> com.objectmentor.utilities.args.ArgsException.ErrorCode.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ArgsException</span> <span class="keyword">extends</span> <span class="title">Exception</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">char</span> errorArgumentId = <span class="string">'\0'</span>;</span><br><span class="line">    <span class="keyword">private</span> String errorParameter = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">private</span> ErrorCode errorCode = OK;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ArgsException</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ArgsException</span><span class="params">(String message)</span> </span>&#123;<span class="keyword">super</span>(message);&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ArgsException</span><span class="params">(ErrorCode errorCode)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.errorCode = errorCode;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ArgsException</span><span class="params">(ErrorCode errorCode, String errorParameter)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.errorCode = errorCode;</span><br><span class="line">        <span class="keyword">this</span>.errorParameter = errorParameter;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ArgsException</span><span class="params">(ErrorCode errorCode,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">char</span> errorArgumentId, String errorParameter)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.errorCode = errorCode;</span><br><span class="line">        <span class="keyword">this</span>.errorParameter = errorParameter;</span><br><span class="line">        <span class="keyword">this</span>.errorArgumentId = errorArgumentId;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">char</span> <span class="title">getErrorArgumentId</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> errorArgumentId;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setErrorArgumentId</span><span class="params">(<span class="keyword">char</span> errorArgumentId)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.errorArgumentId = errorArgumentId;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getErrorParameter</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> errorParameter;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setErrorParameter</span><span class="params">(String errorParameter)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.errorParameter = errorParameter;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ErrorCode <span class="title">getErrorCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> errorCode;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setErrorCode</span><span class="params">(ErrorCode errorCode)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.errorCode = errorCode;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">errorMessage</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">switch</span> (errorCode) &#123;</span><br><span class="line">            <span class="keyword">case</span> OK:</span><br><span class="line">                <span class="keyword">return</span> <span class="string">"TILT: Should not get here."</span>;</span><br><span class="line">            <span class="keyword">case</span> UNEXPECTED_ARGUMENT:</span><br><span class="line">                <span class="keyword">return</span> String.format(<span class="string">"Argument -%c unexpected."</span>, errorArgumentId);</span><br><span class="line">            <span class="keyword">case</span> MISSING_STRING:</span><br><span class="line">                <span class="keyword">return</span> String.format(<span class="string">"Could not find string parameter for -%c."</span>,</span><br><span class="line">                                errorArgumentId);</span><br><span class="line">            <span class="keyword">case</span> INVALID_INTEGER:</span><br><span class="line">                <span class="keyword">return</span> String.format(<span class="string">"Argument -%c expects an integer but was '%s'."</span>,</span><br><span class="line">                                errorArgumentId, errorParameter);</span><br><span class="line">            <span class="keyword">case</span> MISSING_INTEGER:</span><br><span class="line">                <span class="keyword">return</span> String.format(<span class="string">"Could not find integer parameter for -%c."</span>,</span><br><span class="line">                                errorArgumentId);</span><br><span class="line">            <span class="keyword">case</span> INVALID_DOUBLE:</span><br><span class="line">                <span class="keyword">return</span> String.format(<span class="string">"Argument -%c expects a double but was '%s'."</span>,</span><br><span class="line">                                errorArgumentId, errorParameter);</span><br><span class="line">            <span class="keyword">case</span> MISSING_DOUBLE:</span><br><span class="line">                <span class="keyword">return</span> String.format(<span class="string">"Could not find double parameter for -%c."</span>,</span><br><span class="line">                                errorArgumentId);</span><br><span class="line">            <span class="keyword">case</span> INVALID_ARGUMENT_NAME:</span><br><span class="line">                <span class="keyword">return</span> String.format(<span class="string">"'%c' is not a valid argument name."</span>,</span><br><span class="line">                                errorArgumentId);</span><br><span class="line">            <span class="keyword">case</span> INVALID_ARGUMENT_FORMAT:</span><br><span class="line">                <span class="keyword">return</span> String.format(<span class="string">"'%s' is not a valid argument format."</span>,</span><br><span class="line">                                errorParameter);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">enum</span> ErrorCode &#123;</span><br><span class="line">        OK, INVALID_ARGUMENT_FORMAT, UNEXPECTED_ARGUMENT, INVALID_ARGUMENT_NAME,</span><br><span class="line">        MISSING_STRING,</span><br><span class="line">        MISSING_INTEGER, INVALID_INTEGER,</span><br><span class="line">        MISSING_DOUBLE, INVALID_DOUBLE&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="脏代码"><a href="#脏代码" class="headerlink" title="脏代码"></a>脏代码</h1><p>可以看出，代码足够整洁————你可以从第一行看到最后一行，在没有注释的情况下基本理解其含义。但在一开始，代码很肮脏，如下所示。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.text.ParseException;</span><br><span class="line"><span class="keyword">import</span> java.util.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Args</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String schema;</span><br><span class="line">    <span class="keyword">private</span> String[] args;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> valid = <span class="keyword">true</span>;</span><br><span class="line">    <span class="keyword">private</span> Set&lt;Character&gt; unexpectedArguments = <span class="keyword">new</span> TreeSet&lt;Character&gt;();</span><br><span class="line">    <span class="keyword">private</span> Map&lt;Character, Boolean&gt; booleanArgs =</span><br><span class="line">    <span class="keyword">new</span> HashMap&lt;Character, Boolean&gt;();</span><br><span class="line">    <span class="keyword">private</span> Map&lt;Character, String&gt; stringArgs = <span class="keyword">new</span> HashMap&lt;Character, String&gt;();</span><br><span class="line">    <span class="keyword">private</span> Map&lt;Character, Integer&gt; intArgs = <span class="keyword">new</span> HashMap&lt;Character, Integer&gt;();</span><br><span class="line">    <span class="keyword">private</span> Set&lt;Character&gt; argsFound = <span class="keyword">new</span> HashSet&lt;Character&gt;();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> currentArgument;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">char</span> errorArgumentId = <span class="string">'\0'</span>;</span><br><span class="line">    <span class="keyword">private</span> String errorParameter = <span class="string">"TILT"</span>;</span><br><span class="line">    <span class="keyword">private</span> ErrorCode errorCode = ErrorCode.OK;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">enum</span> ErrorCode &#123;</span><br><span class="line">        OK, MISSING_STRING, MISSING_INTEGER, INVALID_INTEGER, UNEXPECTED_ARGUMENT&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Args</span><span class="params">(String schema, String[] args)</span> <span class="keyword">throws</span> ParseException </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.schema = schema;</span><br><span class="line">        <span class="keyword">this</span>.args = args;</span><br><span class="line">        valid = parse();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">parse</span><span class="params">()</span> <span class="keyword">throws</span> ParseException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (schema.length() == <span class="number">0</span> &amp;&amp; args.length == <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        parseSchema();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            parseArguments();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ArgsException e) &#123;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> valid;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">parseSchema</span><span class="params">()</span> <span class="keyword">throws</span> ParseException </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (String element : schema.split(<span class="string">","</span>)) &#123;</span><br><span class="line">            <span class="keyword">if</span> (element.length() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                String trimmedElement = element.trim();</span><br><span class="line">                parseSchemaElement(trimmedElement);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseSchemaElement</span><span class="params">(String element)</span> <span class="keyword">throws</span> ParseException </span>&#123;</span><br><span class="line">        <span class="keyword">char</span> elementId = element.charAt(<span class="number">0</span>);</span><br><span class="line">        String elementTail = element.substring(<span class="number">1</span>);</span><br><span class="line">        validateSchemaElementId(elementId);</span><br><span class="line">        <span class="keyword">if</span> (isBooleanSchemaElement(elementTail))</span><br><span class="line">            parseBooleanSchemaElement(elementId);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (isStringSchemaElement(elementTail))</span><br><span class="line">            parseStringSchemaElement(elementId);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (isIntegerSchemaElement(elementTail)) &#123;</span><br><span class="line">            parseIntegerSchemaElement(elementId);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ParseException(</span><br><span class="line">                    String.format(<span class="string">"Argument: %c has invalid format: %s."</span>,</span><br><span class="line">                    elementId, elementTail), <span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">validateSchemaElementId</span><span class="params">(<span class="keyword">char</span> elementId)</span> <span class="keyword">throws</span> ParseException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!Character.isLetter(elementId)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ParseException(</span><br><span class="line">                    <span class="string">"Bad character:"</span> + elementId + <span class="string">"in Args format: "</span> + schema, <span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseBooleanSchemaElement</span><span class="params">(<span class="keyword">char</span> elementId)</span> </span>&#123;</span><br><span class="line">        booleanArgs.put(elementId, <span class="keyword">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseIntegerSchemaElement</span><span class="params">(<span class="keyword">char</span> elementId)</span> </span>&#123;</span><br><span class="line">        intArgs.put(elementId, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseStringSchemaElement</span><span class="params">(<span class="keyword">char</span> elementId)</span> </span>&#123;</span><br><span class="line">        stringArgs.put(elementId, <span class="string">""</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isStringSchemaElement</span><span class="params">(String elementTail)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> elementTail.equals(<span class="string">"*"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isBooleanSchemaElement</span><span class="params">(String elementTail)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> elementTail.length() == <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isIntegerSchemaElement</span><span class="params">(String elementTail)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> elementTail.equals(<span class="string">"#"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">parseArguments</span><span class="params">()</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (currentArgument = <span class="number">0</span>; currentArgument &lt; args.length; currentArgument++)</span><br><span class="line">        &#123;</span><br><span class="line">            String arg = args[currentArgument];</span><br><span class="line">            parseArgument(arg);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseArgument</span><span class="params">(String arg)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (arg.startsWith(<span class="string">"-"</span>))</span><br><span class="line">            parseElements(arg);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseElements</span><span class="params">(String arg)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; arg.length(); i++)</span><br><span class="line">            parseElement(arg.charAt(i));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseElement</span><span class="params">(<span class="keyword">char</span> argChar)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (setArgument(argChar))</span><br><span class="line">            argsFound.add(argChar);</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            unexpectedArguments.add(argChar);</span><br><span class="line">        errorCode = ErrorCode.UNEXPECTED_ARGUMENT;</span><br><span class="line">        valid = <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">setArgument</span><span class="params">(<span class="keyword">char</span> argChar)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (isBooleanArg(argChar))</span><br><span class="line">            setBooleanArg(argChar, <span class="keyword">true</span>);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (isStringArg(argChar))</span><br><span class="line">            setStringArg(argChar);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (isIntArg(argChar))</span><br><span class="line">            setIntArg(argChar);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isIntArg</span><span class="params">(<span class="keyword">char</span> argChar)</span> </span>&#123;<span class="keyword">return</span> intArgs.containsKey(argChar);&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setIntArg</span><span class="params">(<span class="keyword">char</span> argChar)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        currentArgument++;</span><br><span class="line">        String parameter = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            parameter = args[currentArgument];</span><br><span class="line">            intArgs.put(argChar, <span class="keyword">new</span> Integer(parameter));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ArrayIndexOutOfBoundsException e) &#123;</span><br><span class="line">            valid = <span class="keyword">false</span>;</span><br><span class="line">            errorArgumentId = argChar;</span><br><span class="line">            errorCode = ErrorCode.MISSING_INTEGER;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ArgsException();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (NumberFormatException e) &#123;</span><br><span class="line">            valid = <span class="keyword">false</span>;</span><br><span class="line">            errorArgumentId = argChar;</span><br><span class="line">            errorParameter = parameter;</span><br><span class="line">            errorCode = ErrorCode.INVALID_INTEGER;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ArgsException();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setStringArg</span><span class="params">(<span class="keyword">char</span> argChar)</span> <span class="keyword">throws</span> ArgsException </span>&#123;</span><br><span class="line">        currentArgument++;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            stringArgs.put(argChar, args[currentArgument]);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ArrayIndexOutOfBoundsException e) &#123;</span><br><span class="line">            valid = <span class="keyword">false</span>;</span><br><span class="line">            errorArgumentId = argChar;</span><br><span class="line">            errorCode = ErrorCode.MISSING_STRING;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ArgsException();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isStringArg</span><span class="params">(<span class="keyword">char</span> argChar)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> stringArgs.containsKey(argChar);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setBooleanArg</span><span class="params">(<span class="keyword">char</span> argChar, <span class="keyword">boolean</span> value)</span> </span>&#123;</span><br><span class="line">        booleanArgs.put(argChar, value);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isBooleanArg</span><span class="params">(<span class="keyword">char</span> argChar)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> booleanArgs.containsKey(argChar);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">cardinality</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> argsFound.size();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">usage</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (schema.length() &gt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="string">"-["</span> + schema + <span class="string">"]"</span>;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">errorMessage</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">switch</span> (errorCode) &#123;</span><br><span class="line">            <span class="keyword">case</span> OK:</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"TILT: Should not get here."</span>);</span><br><span class="line">            <span class="keyword">case</span> UNEXPECTED_ARGUMENT:</span><br><span class="line">                <span class="keyword">return</span> unexpectedArgumentMessage();</span><br><span class="line">            <span class="keyword">case</span> MISSING_STRING:</span><br><span class="line">                <span class="keyword">return</span> String.format(<span class="string">"Could not find string parameter for -%c."</span>,</span><br><span class="line">                                errorArgumentId);</span><br><span class="line">            <span class="keyword">case</span> INVALID_INTEGER:</span><br><span class="line">                <span class="keyword">return</span> String.format(<span class="string">"Argument -%c expects an integer but was '%s'."</span>,</span><br><span class="line">                                errorArgumentId, errorParameter);</span><br><span class="line">            <span class="keyword">case</span> MISSING_INTEGER:</span><br><span class="line">                <span class="keyword">return</span> String.format(<span class="string">"Could not find integer parameter for -%c."</span>,</span><br><span class="line">                                errorArgumentId);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> String <span class="title">unexpectedArgumentMessage</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        StringBuffer message = <span class="keyword">new</span> StringBuffer(<span class="string">"Argument(s) -"</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">char</span> c : unexpectedArguments) &#123;</span><br><span class="line">            message.append(c);</span><br><span class="line">        &#125;</span><br><span class="line">        message.append(<span class="string">" unexpected."</span>);</span><br><span class="line">        <span class="keyword">return</span> message.toString();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">falseIfNull</span><span class="params">(Boolean b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> b != <span class="keyword">null</span> &amp;&amp; b;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">zeroIfNull</span><span class="params">(Integer i)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> i == <span class="keyword">null</span> ? <span class="number">0</span> : i;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> String <span class="title">blankIfNull</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> s == <span class="keyword">null</span> ? <span class="string">""</span> : s;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getString</span><span class="params">(<span class="keyword">char</span> arg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> blankIfNull(stringArgs.get(arg));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getInt</span><span class="params">(<span class="keyword">char</span> arg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> zeroIfNull(intArgs.get(arg));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">getBoolean</span><span class="params">(<span class="keyword">char</span> arg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> falseIfNull(booleanArgs.get(arg));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">has</span><span class="params">(<span class="keyword">char</span> arg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> argsFound.contains(arg);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isValid</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> valid;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">ArgsException</span> <span class="keyword">extends</span> <span class="title">Exception</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> 显然，这段代码需要打磨————TILT之类名称奇怪的字符串、HashSet 和 TreeSets，还有奇怪的 try-catch-finally 块。产生这些东西的原因是作者在一开始的只支持 Boolean 类型的代码上强行添加了 String 和 Integer 类。</p>
+<h1 id="如何破坏"><a href="#如何破坏" class="headerlink" title="如何破坏"></a>如何破坏</h1><p> 通过对比作者的意图、初始目标和最后一段代码，也就是烂的实现，我们可以发现，毁坏程序最好的方法就是<strong>以改动之名大动其结构，有些程序甚至永远不能从这种所谓“改 进”中恢复过来。</strong></p>
+<h1 id="如何改进"><a href="#如何改进" class="headerlink" title="如何改进"></a>如何改进</h1><p> 作者改进烂代码的方法是 TDD，这样来保证系统始终能够运行，不会作出破坏系统的修改，每次修改都保证系统像之前一样工作。</p>
+<p> 具体来说，<strong>用JUnit管理单元测试、用 Fitnesse 完成验收测试</strong>，以 wiki 形式写程。从而，随时能够运行这些测试就说名系统以我们期望的方式工作。</p>
+<p> 个人在改进、重构代码时，也可以采用类似的方法。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li>《代码整洁之道》 作者：[美] Robert C·Martin 译者: 韩磊 </li>
+</ul>
+
+        </div></article>
+      <article class="post">
+    <header class="post-header">
+      <h1 class="post-title"><a class="post-link" href="/2019/05/13/2019-06-21-Golang%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E5%88%9D%E6%8E%A2/">Golang 内存模型初探</a>
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-05-13
+        </span></div>
+    </header>
+
+    <div class="post-content"><p>内存模型:MM 定义了语言在计算机内存 RAM 中的工作方式，包括共享变量的可见性、共享变量的同步。</p>
+<h1 id="内存分配"><a href="#内存分配" class="headerlink" title="内存分配"></a>内存分配</h1><ol>
+<li><p>mspan</p>
+</li>
+<li><p>mcache</p>
+</li>
+</ol>
+<h1 id="内存模型"><a href="#内存模型" class="headerlink" title="内存模型"></a>内存模型</h1><p>Happens Before 定义两个操作间的偏序关系，具有传递性。用于保证一个线程的内存写操作对紧跟着执行的（中间不能穿插别的项目）另一个线程可见，确切的说是执行之前就可见。<br>如果没有得到 HB 保证，会出现很大问题。Java中也是如此。</p>
+<h2 id="Go-中可见行和顺序性的保证方法"><a href="#Go-中可见行和顺序性的保证方法" class="headerlink" title="Go 中可见行和顺序性的保证方法"></a>Go 中可见行和顺序性的保证方法</h2><p>Golang 语言的内存模型规定了一个 goroutine 可以看到另外一个 goroutine 修改同一个变量的值的条件，这类似 java 内存模型中内存可见性问题（ Java 内存可见性问题可以参考拙作：Java 并发编程之美一书）。</p>
+<p>当多个 goroutine 并发同时存取同一个数据时候必须把并发的存取的操作顺序化，在go中可以实现操作顺序化的工具有高级的通道（channel）通信和同步原语比如sync包中的Mutex(互斥锁)、RWMutex(读写锁) 或者和 sync/atomic 中的原子操作。</p>
+<h3 id="单线程"><a href="#单线程" class="headerlink" title="单线程"></a>单线程</h3><p>单线程下按代码先后顺序有 Happens Before 关系，编译器和CPU也会做优化，但不会影响其先后顺序。<br>一个读操作r1总是对最近的一个对写操作w1的内容可见，即使不是同一个变量的读写。</p>
+<h3 id="Init函数"><a href="#Init函数" class="headerlink" title="Init函数"></a>Init函数</h3><ol>
+<li><p>包P1中导入P2，P2中 init 函数 与 P1 形成Happens Before 关系；</p>
+</li>
+<li><p>main 函数 Happens After 所有的 init 函数</p>
+</li>
+</ol>
+<h3 id="Goroutine"><a href="#Goroutine" class="headerlink" title="Goroutine"></a>Goroutine</h3><ol>
+<li>Goroutine 创建 Happens Before 所有的 Goroutine 操作<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"fmt"</span></span><br><span class="line">    <span class="string">"sync"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"><span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f</span><span class="params">()</span></span> &#123;</span><br><span class="line">    fmt.Print(a)</span><br><span class="line">    wg.Done()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">hello</span><span class="params">()</span></span> &#123;</span><br><span class="line">    a = <span class="string">"hello, world"</span></span><br><span class="line">    <span class="keyword">go</span> f()</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    wg.Add(<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    hello()</span><br><span class="line">    wg.Wait()</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>Goroutine 的销毁 Happens After 所有此 Goroutine 操作<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">hello</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123; a = <span class="string">"hello"</span> &#125;()</span><br><span class="line">    <span class="built_in">print</span>(a)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h3 id="Channel"><a href="#Channel" class="headerlink" title="Channel"></a>Channel</h3><ol>
+<li><p>对一个元素的 send 操作 Happens Before 对应的 receive 完成操作</p>
+</li>
+<li><p>对 channel 的 close 操作 Happens Before receive   端的收到关闭通知操作</p>
+</li>
+<li><p>对于 Unbuffered Channel，对一个元素的 receive 操作 Happens Before 对应的 send 完成操作</p>
+</li>
+<li><p>对于 Buffered Channel，假设 Channel 的 buffer 大小为 C，那么对第 k 个元素的 receive 操作，Happens Before 第 k+C 个 send 完成操作。可以看出上一条 Unbuffered Channel 规则就是这条规则 C=0 时的特例</p>
+</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"fmt"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> c = <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">10</span>)</span><br><span class="line"><span class="keyword">var</span> a <span class="keyword">string</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">f</span><span class="params">()</span></span> &#123;</span><br><span class="line">    a = <span class="string">"hello, world"</span> <span class="comment">//1</span></span><br><span class="line">    c &lt;- <span class="number">0</span>             <span class="comment">//2</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">go</span> f()   <span class="comment">//3</span></span><br><span class="line">    &lt;-c      <span class="comment">//4</span></span><br><span class="line">    fmt.Print(a) <span class="comment">//5</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>类比 JMM，有很多是相似的，比如单线程下的顺序性，但 Golang 比 Java 要简单得多啦。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a href="http://ifeve.com/golang-mem/" target="_blank" rel="noopener">GoLang内存模型</a></li>
+<li><a href="https://segment.com/blog/allocation-efficiency-in-high-performance-go-services/" target="_blank" rel="noopener">Allocation efficiency in high-performance Go services</a></li>
+</ul>
+
+        </div></article>
+      <article class="post">
+    <header class="post-header">
+      <h1 class="post-title"><a class="post-link" href="/2019/05/02/2019-05-26-%E4%BB%A3%E7%A0%81%E6%95%B4%E6%B4%81%E4%B9%8B%E9%81%93-%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E8%81%8C%E4%B8%9A%E4%BF%AE%E5%85%BB/">代码整洁之道</a>
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-05-02
+        </span></div>
+    </header>
+
+    <div class="post-content"><p>读过《代码整洁之道》后列了如下提纲，时常翻阅可能会写出更整洁的代码。相比 Alibaba 和唯品会的 Java 开发手册，这本书从更宏观的角度以及代码之外的事情（沟通、需求、设计、管理）提出了一些可实操的有用的方法。从这点来看，书名叫做《程序员的自我修养》也不错，哈哈。</p>
+<blockquote>
+<p>享受职业素养。</p>
+</blockquote>
+<h1 id="专业主义"><a href="#专业主义" class="headerlink" title="专业主义"></a>专业主义</h1><h2 id="不行损害之事"><a href="#不行损害之事" class="headerlink" title="不行损害之事"></a>不行损害之事</h2><ul>
+<li><p>让 QA 找不出任何问题</p>
+</li>
+<li><p>确信代码能正常运行（通过主动反复测试）</p>
+</li>
+<li><p>自动化 QA</p>
+</li>
+<li><p>不要破坏结构，以牺牲结构为代价发布新功能，得不偿失，将来必定后悔。</p>
+</li>
+</ul>
+<p>##了解所在领域</p>
+<ul>
+<li><p>NS图表</p>
+</li>
+<li><p>Mealy &amp; Moore 状态机的差别</p>
+</li>
+<li><p>变换分析的含义</p>
+</li>
+<li><p>快速排序手写</p>
+</li>
+<li><p>临时传递数据</p>
+</li>
+<li><p>耦合性（Conascence）</p>
+</li>
+</ul>
+<h2 id="每个开发人员必须精通的事项"><a href="#每个开发人员必须精通的事项" class="headerlink" title="每个开发人员必须精通的事项"></a>每个开发人员必须精通的事项</h2><ul>
+<li><p>设计模式 （GOF，24）</p>
+</li>
+<li><p>设计原则（SOLID）</p>
+</li>
+<li><p>编程方法</p>
+<ul>
+<li>XP</li>
+<li>Scrum</li>
+<li>精益</li>
+<li>看板</li>
+<li>瀑布</li>
+<li>结构化分析、设计</li>
+</ul>
+</li>
+<li><p>实践</p>
+<ul>
+<li>测试驱动开发</li>
+<li>面向对象设计</li>
+<li>结构化编程</li>
+<li>持续集成</li>
+<li>结对编程</li>
+</ul>
+</li>
+<li><p>工件</p>
+<ul>
+<li>UML 图</li>
+<li>DFD 图</li>
+<li>结构图</li>
+<li>Petri 网络图</li>
+<li>状态迁移图标</li>
+<li>流程图</li>
+<li>决策表</li>
+<li>甘特图<h2 id="职业道德"><a href="#职业道德" class="headerlink" title="职业道德"></a>职业道德</h2></li>
+</ul>
+</li>
+<li><p>坚持学习</p>
+</li>
+<li><p>练习</p>
+</li>
+<li><p>合作</p>
+</li>
+<li><p>辅导</p>
+</li>
+<li><p>了解业务领域</p>
+</li>
+<li><p>与客户（需求）保持一致</p>
+</li>
+<li><p>谦逊</p>
+</li>
+</ul>
+<h1 id="说“不”"><a href="#说“不”" class="headerlink" title="说“不”"></a>说“不”</h1><ul>
+<li>当你面对类似猩猩卖场提出的在黑色星期五之前做出一个 iPhone 应用的需求时，你应该尊重事实和自己，敢于说“不”。</li>
+</ul>
+<h1 id="说“是”"><a href="#说“是”" class="headerlink" title="说“是”"></a>说“是”</h1><h2 id="承诺用语"><a href="#承诺用语" class="headerlink" title="承诺用语"></a>承诺用语</h2><p>做出承诺包含三个步骤</p>
+<ul>
+<li><p><strong>口头上说</strong>自己将会去做</p>
+</li>
+<li><p><strong>心里认真对待</strong>做出的承诺</p>
+</li>
+<li><p>真正<strong>付诸行动</strong></p>
+</li>
+</ul>
+<h2 id="逃避用语"><a href="#逃避用语" class="headerlink" title="逃避用语"></a>逃避用语</h2><ul>
+<li>需要/应该<ul>
+<li>我们需要把这事做完</li>
+<li>但愿我有时间做这事</li>
+</ul>
+</li>
+<li>希望/但愿<ul>
+<li>希望我明天能完成任务</li>
+<li>但愿电脑能快点</li>
+</ul>
+</li>
+<li>让我们（而不是让我）<ul>
+<li>让我们回头见</li>
+<li>让我们把这事做完<br>总之，说“是”就是：你对自己将会做某事做了清晰的事实陈述，而且还说明了完成期限。</li>
+</ul>
+</li>
+</ul>
+<h1 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h1><h2 id="代码要求"><a href="#代码要求" class="headerlink" title="代码要求"></a>代码要求</h2><ul>
+<li><p>代码能正常工作</p>
+</li>
+<li><p>代码能满足需求</p>
+</li>
+<li><p>代码能和现有系统结合得天衣无缝</p>
+</li>
+<li><p>其他程序员能读懂你的代码</p>
+</li>
+</ul>
+<h2 id="个人状态"><a href="#个人状态" class="headerlink" title="个人状态"></a>个人状态</h2><ul>
+<li><p>凌晨三点写的可能是糟糕的代码</p>
+</li>
+<li><p>焦虑时也是如此</p>
+</li>
+<li><p>流态区可能会效率高，但也会导致<strong>忽略与全局整合</strong></p>
+</li>
+<li><p>音乐并不能提高效率</p>
+</li>
+<li><p>被打断的预防是结对编程或者 TDD</p>
+</li>
+<li><p>阻塞时找点别的事情干</p>
+</li>
+<li><p>“创造性输出”依赖于“创造性输入”，比如音乐、小说、电影等</p>
+</li>
+<li><p>调试也是编码的一部分</p>
+</li>
+</ul>
+<h2 id="保持节奏"><a href="#保持节奏" class="headerlink" title="保持节奏"></a>保持节奏</h2><p>软件开发是一场马拉松🏃🏻‍♂️而不是短跑。</p>
+<ul>
+<li><p>知道何时应该离开一会，疲倦、预防颈椎病、心血管疾病（……)</p>
+</li>
+<li><p>开车回家路上，脑袋可以解决一些问题</p>
+</li>
+<li><p>洗澡同上</p>
+</li>
+<li><p>进度延迟时坚决坚持你的估算</p>
+</li>
+<li><p>加班长期来说并无好处</p>
+</li>
+</ul>
+<h2 id="帮助"><a href="#帮助" class="headerlink" title="帮助"></a>帮助</h2><ul>
+<li><p>帮助他人可以收获更多</p>
+</li>
+<li><p>接受他人帮助</p>
+</li>
+<li><p>辅导缺乏经验的程序员是老鸟的职责</p>
+</li>
+</ul>
+<h1 id="测试驱动开发"><a href="#测试驱动开发" class="headerlink" title="测试驱动开发"></a>测试驱动开发</h1><p>最早是 XP 极限编程运动的一部分，后被其他所有敏捷方法采纳。不仅是一种缩短编码周期的简单技巧。</p>
+<h2 id="三项法则是"><a href="#三项法则是" class="headerlink" title="三项法则是"></a>三项法则是</h2><ol>
+<li><p>编写好失败单元测试之前，不写任何产品代码</p>
+</li>
+<li><p>只要有一个单元测试失败，就不再写测试代码；无法通过编译也是一种失败</p>
+</li>
+<li><p>产品代码恰好能够让当前的失败单元测试通过即可，不必多写</p>
+</li>
+</ol>
+<h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><ul>
+<li><p>确定性 修改之后运行测试，确保没有错误因修改产生</p>
+</li>
+<li><p>减少 Bug</p>
+</li>
+<li><p>让人敢于修改代码</p>
+</li>
+<li><p>单元测试成为示例和文档</p>
+</li>
+<li><p>遵循三项法则有助于做出松耦合的设计，因为测试不允许耦合</p>
+</li>
+<li><p>专业人士的选择</p>
+</li>
+</ul>
+<h2 id="局限"><a href="#局限" class="headerlink" title="局限"></a>局限</h2><ul>
+<li>某些情况下确实不适用，并非银弹，就像 DDD。</li>
+</ul>
+<h1 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h1><ul>
+<li>用自己的时间练习————保证不落伍是自己的责任</li>
+</ul>
+<p>-专业人士需要练习，做到最好，拓宽视野。</p>
+<h1 id="验收测试"><a href="#验收测试" class="headerlink" title="验收测试"></a>验收测试</h1><ul>
+<li><p>不要过早精细化————你不知道哪儿应该精细化</p>
+</li>
+<li><p>但确定需求应该尽早</p>
+</li>
+<li><p>业务分析员测试“正确路径”，QA测试“错误路径”</p>
+</li>
+<li><p>验收测试是业务方写给业务方的，单元测试是程序员写给自己的（也可以拿来做文档的一部分）</p>
+</li>
+</ul>
+<h1 id="测试策略"><a href="#测试策略" class="headerlink" title="测试策略"></a>测试策略</h1><ul>
+<li><p>QA 的任务就是和业务人员一起创建自动化验收测试。</p>
+</li>
+<li><p>自动化测试金字塔，自顶向下依次是</p>
+<ul>
+<li><p>人工探索式测试：需要人工介入，既不是自动化测试，也非脚本测试，目的是探索系统预期之外的能力</p>
+</li>
+<li><p>系统测试：对整个集成完毕的系统的自动化测试，不会直接测试业务规则，而是测试系统是否已经正确组装完毕、各部件之间是否能正常交互。</p>
+</li>
+<li><p>集成测试：组装配件成组合，判断其是否正常通信，是编排型测试，只看是否协调，不管业务规则</p>
+</li>
+<li><p>组件测试：对组建的业务规则的验收测试</p>
+</li>
+<li><p>单元测试：供程序员自己使用</p>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="时间管理"><a href="#时间管理" class="headerlink" title="时间管理"></a>时间管理</h1><p>8小时很短暂，只有480分钟，28800秒。</p>
+<ul>
+<li><p>会议需要成本，时间成本和金钱成本</p>
+</li>
+<li><p>会议并不总要参加，也可以离席</p>
+</li>
+<li><p>敏捷开发会议需要回答三个问题，每个问题不超过 20s</p>
+<ul>
+<li>我昨天干了什么</li>
+<li>我今天打算干什么</li>
+<li>我遇到了什么问题</li>
+</ul>
+</li>
+<li><p>注意力</p>
+<ul>
+<li>足够的睡眠</li>
+<li>不集中注意力时，注意力可以恢复</li>
+<li>肌肉注意力不同于心智注意力，且前者可以改善后者</li>
+<li>平衡输入与输出</li>
+</ul>
+</li>
+<li><p>要避免的行为</p>
+<ul>
+<li>优先级错乱</li>
+<li>死胡同（走不下去，应该折返）</li>
+<li>泥潭（可以完成但效率严重降低，应及时抽身）</li>
+</ul>
+</li>
+</ul>
+<h1 id="预估"><a href="#预估" class="headerlink" title="预估"></a>预估</h1><p>不同的人对预估看法不同。业务方觉得预估就是承诺，开发方认为认为预估只是个猜测。</p>
+<ul>
+<li><p>避免暗示性承诺，分清楚预估与承诺</p>
+</li>
+<li><p>计划评审技术（PERT）</p>
+<ul>
+<li>乐观预估 O</li>
+<li>标称预估 N</li>
+<li>悲观预估 P</li>
+<li>期望时间 u = (O+4N+P)/6</li>
+<li>标准差 o = (P-O)/6</li>
+<li></li>
+</ul>
+</li>
+<li><p>生成共识的 Delphi 法</p>
+<ul>
+<li>亮手指</li>
+<li>规划扑克</li>
+<li>关联预估</li>
+<li>三元预估</li>
+</ul>
+</li>
+<li><p>大数定律防止预估出错</p>
+</li>
+</ul>
+<h1 id="压力"><a href="#压力" class="headerlink" title="压力"></a>压力</h1><ul>
+<li><p>避免压力</p>
+<ul>
+<li>合理的承诺</li>
+<li>保持整洁</li>
+<li>危机中的纪律</li>
+</ul>
+</li>
+<li><p>应对压力</p>
+<ul>
+<li>不要惊慌失措</li>
+<li>沟通</li>
+<li>依靠纪律原则</li>
+<li>寻求帮助</li>
+</ul>
+</li>
+</ul>
+<h1 id="协作"><a href="#协作" class="headerlink" title="协作"></a>协作</h1><blockquote>
+<p>我们并非是因为喜欢和其他人在一起工作而选择做程序员的</p>
+</blockquote>
+<ul>
+<li><p>与用户讨论，理解业务</p>
+</li>
+<li><p>与程序员密切合作</p>
+<ul>
+<li>共享代码</li>
+<li>结对编程</li>
+</ul>
+</li>
+</ul>
+<h1 id="项目与团队"><a href="#项目与团队" class="headerlink" title="项目与团队"></a>项目与团队</h1><blockquote>
+<p>项目比团队更难构建</p>
+</blockquote>
+<ul>
+<li><p>让一个程序员同时投身两个项目并不明智</p>
+</li>
+<li><p>有凝聚力的团队可以有3-20人，最好是12人。</p>
+</li>
+</ul>
+<h1 id="辅导、学徒期与技艺"><a href="#辅导、学徒期与技艺" class="headerlink" title="辅导、学徒期与技艺"></a>辅导、学徒期与技艺</h1><blockquote>
+<p>医学专业已经建立了一套严密的辅导体系。</p>
+</blockquote>
+<ul>
+<li>上升过程<ul>
+<li>学徒期/实习生</li>
+<li>熟练工</li>
+<li>大师<br>学校能够传授的是理论，无法传授作为一个程序员所需掌握的原则、实践和技能。这些东西只有经由师徒个体间多年的细心监督和辅导才能获得。每个程序员都会经历上述时期，因此应该建立一种包含学徒期、实习期和长期指引的机制。</li>
+</ul>
+</li>
+</ul>
+
+        </div></article>
+      <nav class="pagination"><a class="prev" href="/page/2/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text">Prev</span>
+      </a>
+    <a class="next" href="/page/4/">
+        <span class="next-text">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></section></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:Dingbiao1998@icloud.com" target="_blank" rel="noopener" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/Ubique0305" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2018 - 2019<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Adam Ubik</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>
