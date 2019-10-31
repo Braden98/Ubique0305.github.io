@@ -91,9 +91,36 @@
     
     
     
+      <category term="RCU" scheme="http://yoursite.com/tags/RCU/"/>
+    
       <category term="并发" scheme="http://yoursite.com/tags/%E5%B9%B6%E5%8F%91/"/>
     
-      <category term="RCU" scheme="http://yoursite.com/tags/RCU/"/>
+  </entry>
+  
+  <entry>
+    <title>对象存储的优势及实习问题记录</title>
+    <link href="http://yoursite.com/2019/06/13/2019-07-04-%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0%E5%8F%8AGET%20Bucket%20(List%20Objects)%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98/"/>
+    <id>http://yoursite.com/2019/06/13/2019-07-04-对象存储技术学习及GET Bucket (List Objects)性能问题/</id>
+    <published>2019-06-13T14:33:14.000Z</published>
+    <updated>2019-10-29T23:41:01.738Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="对象存储"><a href="#对象存储" class="headerlink" title="对象存储"></a>对象存储</h1><p>“对象存储”来源于英文“Object Storage”或“Object-based Storage”</p><h3 id="特性与目标"><a href="#特性与目标" class="headerlink" title="特性与目标"></a>特性与目标</h3><p>多租户<br>不假设数据特征，包括类型，大小等<br>存储空间可无限扩展，且性能该随容量水平扩展而线性提升，不然数据量越大，请求越多，性能却不提升，系统的存取性能只会越来越慢<br>数据安全<br>服务高可靠</p><h3 id="索引设计"><a href="#索引设计" class="headerlink" title="索引设计"></a>索引设计</h3><p>顶级命名空间service+bucket即可</p><h3 id="元信息"><a href="#元信息" class="headerlink" title="元信息"></a>元信息</h3><p>属于哪个存储空间<br>类型<br>大小<br>校验值<br>最后修改时间</p><h4 id="特殊元信息"><a href="#特殊元信息" class="headerlink" title="特殊元信息"></a>特殊元信息</h4><p>演唱者是谁<br>作词者是谁<br>作曲者是谁<br>属于哪张唱片<br>属于什么风格</p><h1 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h1><p>传统存储中，块存储暴露Block 文件系统或者网络文件系统如NFS暴露POSIX接口</p><h2 id="DAS-Direct-Attached-Storage"><a href="#DAS-Direct-Attached-Storage" class="headerlink" title="DAS  Direct-Attached Storage"></a>DAS  Direct-Attached Storage</h2><p>直连式存储。直接连接到某台计算机且其他计算机无法获取，如PC的硬盘驱动器。因为服务器无需通过网络来读写数据，所以DAS能为终端用户提供比网络存储更高的性能。如微软公司推荐使用DAS安装Exchange。<br>缺点是依赖服务器主机操作系统进行数据的IO读写和存储维护管理，数据备份和恢复要求占用服务器主机资源（包括CPU、系统IO等）。直连式存储的数据量越大，备份和恢复的时间就越长，对服务器硬件的依赖性和影响就越大。 </p><h2 id="NAS-Network-Attached-Storage"><a href="#NAS-Network-Attached-Storage" class="headerlink" title="NAS  Network-Attached Storage"></a>NAS  Network-Attached Storage</h2><p>网络附属存储/网络接入存储<br>简单说就是连接在网络上，具备资料存储功能的装置，也因此称为网络存储器。将存储设备与服务器彻底分离，底层磁盘通过文件系统类型（分区，格式化后）通过网络的方式（发送ip包）共享给前端应用</p><h2 id="SAN-Storage-Area-Network"><a href="#SAN-Storage-Area-Network" class="headerlink" title="SAN Storage Area Network"></a>SAN Storage Area Network</h2><p>存储区域网络<br> 通过光纤设备将存储设别和服务器连接一起，数据和服务器分离，底层磁盘以块的模式共享给前端的应用服务器。<br> SAN是一个采用网状通道（简称FC）技术，通过FC交换机连接存储阵列和服务器主机，建立专用于数据存储的区域网络。<br> <img src="/img/5E33AC1A918F56A6FFCF48F433A594BF.jpg" alt="插图"></p><h1 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h1><ul><li><p>服务可用性更高<br>通过支持对象数据的高可靠性和业务节点的高可靠性网络、节点的多冗余设计，系统设计可用性达到99.99%。</p></li><li><p>数据可靠性更高<br>通过提供对象数据多份冗余和保证多份对象的数据一致性自动修复技术来提供对象数据的高可靠性。OBS系统设计的数据持久性高达99.999999999%（11个9），意为对象存储服务里1000亿个用户文件，每月最多只有1个文件发生数据丢失的可能性。</p></li><li><p>用户数据更安全<br>用户数据传输到OBS时支持SSL加密，同时，OBS通过AK/SK对访问用户的身份进行鉴权，且结合了ACL、桶策略等多种方式对桶和对象进行访问控制，确保数据传输与访问的安全。此外，用户所上传的对象数据在对象存储服务中分片随机存储在不同硬盘上，所以即便磁盘数据被盗走，也无法将其还原成对象数据。</p></li><li><p>容量无限扩展<br>OBS所有业务、存储节点采用分布式集群方式工作，各功能节点、集群都可以独立扩容，整个扩容过程对用户完全透明。用户只需尽情享用云存储带来的无限空间，不必预测未来的存储需求并可以按需要向上和向下扩展，从而大幅提高业务灵活性。</p></li><li><p>维护成本更低<br>由于数据存储在OBS中，企业无需招聘专门的存储设备维护人员，设备的维护交由OBS处理即可。</p></li></ul><h1 id="实习问题记录"><a href="#实习问题记录" class="headerlink" title="实习问题记录"></a>实习问题记录</h1><h2 id="为什么GET-Bucket-List-Objects-在Object多时会慢？"><a href="#为什么GET-Bucket-List-Objects-在Object多时会慢？" class="headerlink" title="为什么GET Bucket (List Objects)在Object多时会慢？"></a>为什么GET Bucket (List Objects)在Object多时会慢？</h2><p>原问题“get bucket那个接口的实现比较麻烦，在object的量很大的情况下，这个接口的性能会很差。你可以想想这个问题”<br>根据API文档所说</p><ol><li>数据量大，多次循环调用该 API才可获得给定 Prefix 条件的所有对象列表。不像其他API只需要一次Http通信；网络通信次数多，</li><li>需要模拟文件系统的目录结构，对delimiter划分的相同前缀的多个对象遍历和合并。底层实现需要较深的函数调用栈或者内存空间。</li><li>Object数量多时更改更频繁，缓存容易失效</li></ol><p>不知道元信息的存储系统是否支持事务，如果不支持，并发情况下我觉得会加共享锁（读锁），锁竞争也会带来性能开销。可以用redis、zookeeper做分布式协调组件的情况下，可以多个请求竞争一个锁，只有一个请求到达并被处理，然后更新缓存供其他请求使用，从而提高吞吐量</p><p>就是关于 GET Bucket (List Objects)在Object多时性能很差的问题，有没有这几个原因</p><ol><li>网络IO次数多。根据文档所说，利用marker参数多次迭代调用该 API才可获得给定 Prefix 条件的所有对象列表。</li><li>计算资源消耗大。文档说支持用delimiter模拟文件系统的目录结构，对delimiter划分的相同前缀的多个对象遍历和合并。这需要较深的函数调用栈或者内存空间以及计算量。</li><li>保持实时性和一致性带来的开销。如文档所说，缓存容易失效，这会导致更多磁盘IO和数据处理。且读取过程中要加共享锁防止元数据被修改导致的一致性问题。</li></ol><p>看文档我觉得服务器应该是一次完成所有数据的处理，但要分段返回是因为数据可能太大吗？</p><p>关于处理方法<br>文档说因为性能问题不要依赖这个接口的并发调用，而是用户自己缓存数据，这是不是说对数据的准确性要求不太高。那这样后端在并发情况下通过选举其中一个请求到达服务器，从mysql或别的拿到结果放入缓存，其他请求都走缓存，就可以一定程度解决吞吐量的问题。同样，通过elasticsearch或者其他放弃事务机制的搜索方式元数据提高响应速度</p><h2 id="Q：“假设现在数据量在单机承受能力之内，用mysql来存储元信息，怎么处理list请求”"><a href="#Q：“假设现在数据量在单机承受能力之内，用mysql来存储元信息，怎么处理list请求”" class="headerlink" title="Q：“假设现在数据量在单机承受能力之内，用mysql来存储元信息，怎么处理list请求”"></a>Q：“假设现在数据量在单机承受能力之内，用mysql来存储元信息，怎么处理list请求”</h2><p>比如按照Zone划分表，表中有所属bucket信息，类型，大小，校验值，最后修改时间，特殊元信息等字段，可以在编程语言层面记录已经处理过的bucket，实现下次根据marker参数继续处理。事务机制（隔离性）可以方便地保证一致性问题，同时可以对marker或其他字段走索引加快IO速度。<br>mysql8之后已不自带缓存，如文档所说如果要加缓存可以用redis。同时在编程语言层面利用元信息的最后修改时间字段实现缓存自动更新。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;对象存储&quot;&gt;&lt;a href=&quot;#对象存储&quot; class=&quot;headerlink&quot; title=&quot;对象存储&quot;&gt;&lt;/a&gt;对象存储&lt;/h1&gt;&lt;p&gt;“对象存储”来源于英文“Object Storage”或“Object-based Storage”&lt;/p&gt;
+&lt;h3 id=
+      
+    
+    </summary>
+    
+    
+    
+      <category term="笔记" scheme="http://yoursite.com/tags/%E7%AC%94%E8%AE%B0/"/>
+    
+      <category term="对象存储" scheme="http://yoursite.com/tags/%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8/"/>
     
   </entry>
   
@@ -126,33 +153,6 @@
   </entry>
   
   <entry>
-    <title>对象存储的优势及实习问题记录</title>
-    <link href="http://yoursite.com/2019/06/13/2019-07-04-%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E6%8A%80%E6%9C%AF%E5%AD%A6%E4%B9%A0%E5%8F%8AGET%20Bucket%20(List%20Objects)%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98/"/>
-    <id>http://yoursite.com/2019/06/13/2019-07-04-对象存储技术学习及GET Bucket (List Objects)性能问题/</id>
-    <published>2019-06-13T14:33:14.000Z</published>
-    <updated>2019-10-29T23:41:01.738Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="对象存储"><a href="#对象存储" class="headerlink" title="对象存储"></a>对象存储</h1><p>“对象存储”来源于英文“Object Storage”或“Object-based Storage”</p><h3 id="特性与目标"><a href="#特性与目标" class="headerlink" title="特性与目标"></a>特性与目标</h3><p>多租户<br>不假设数据特征，包括类型，大小等<br>存储空间可无限扩展，且性能该随容量水平扩展而线性提升，不然数据量越大，请求越多，性能却不提升，系统的存取性能只会越来越慢<br>数据安全<br>服务高可靠</p><h3 id="索引设计"><a href="#索引设计" class="headerlink" title="索引设计"></a>索引设计</h3><p>顶级命名空间service+bucket即可</p><h3 id="元信息"><a href="#元信息" class="headerlink" title="元信息"></a>元信息</h3><p>属于哪个存储空间<br>类型<br>大小<br>校验值<br>最后修改时间</p><h4 id="特殊元信息"><a href="#特殊元信息" class="headerlink" title="特殊元信息"></a>特殊元信息</h4><p>演唱者是谁<br>作词者是谁<br>作曲者是谁<br>属于哪张唱片<br>属于什么风格</p><h1 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h1><p>传统存储中，块存储暴露Block 文件系统或者网络文件系统如NFS暴露POSIX接口</p><h2 id="DAS-Direct-Attached-Storage"><a href="#DAS-Direct-Attached-Storage" class="headerlink" title="DAS  Direct-Attached Storage"></a>DAS  Direct-Attached Storage</h2><p>直连式存储。直接连接到某台计算机且其他计算机无法获取，如PC的硬盘驱动器。因为服务器无需通过网络来读写数据，所以DAS能为终端用户提供比网络存储更高的性能。如微软公司推荐使用DAS安装Exchange。<br>缺点是依赖服务器主机操作系统进行数据的IO读写和存储维护管理，数据备份和恢复要求占用服务器主机资源（包括CPU、系统IO等）。直连式存储的数据量越大，备份和恢复的时间就越长，对服务器硬件的依赖性和影响就越大。 </p><h2 id="NAS-Network-Attached-Storage"><a href="#NAS-Network-Attached-Storage" class="headerlink" title="NAS  Network-Attached Storage"></a>NAS  Network-Attached Storage</h2><p>网络附属存储/网络接入存储<br>简单说就是连接在网络上，具备资料存储功能的装置，也因此称为网络存储器。将存储设备与服务器彻底分离，底层磁盘通过文件系统类型（分区，格式化后）通过网络的方式（发送ip包）共享给前端应用</p><h2 id="SAN-Storage-Area-Network"><a href="#SAN-Storage-Area-Network" class="headerlink" title="SAN Storage Area Network"></a>SAN Storage Area Network</h2><p>存储区域网络<br> 通过光纤设备将存储设别和服务器连接一起，数据和服务器分离，底层磁盘以块的模式共享给前端的应用服务器。<br> SAN是一个采用网状通道（简称FC）技术，通过FC交换机连接存储阵列和服务器主机，建立专用于数据存储的区域网络。<br> <img src="/img/5E33AC1A918F56A6FFCF48F433A594BF.jpg" alt="插图"></p><h1 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h1><ul><li><p>服务可用性更高<br>通过支持对象数据的高可靠性和业务节点的高可靠性网络、节点的多冗余设计，系统设计可用性达到99.99%。</p></li><li><p>数据可靠性更高<br>通过提供对象数据多份冗余和保证多份对象的数据一致性自动修复技术来提供对象数据的高可靠性。OBS系统设计的数据持久性高达99.999999999%（11个9），意为对象存储服务里1000亿个用户文件，每月最多只有1个文件发生数据丢失的可能性。</p></li><li><p>用户数据更安全<br>用户数据传输到OBS时支持SSL加密，同时，OBS通过AK/SK对访问用户的身份进行鉴权，且结合了ACL、桶策略等多种方式对桶和对象进行访问控制，确保数据传输与访问的安全。此外，用户所上传的对象数据在对象存储服务中分片随机存储在不同硬盘上，所以即便磁盘数据被盗走，也无法将其还原成对象数据。</p></li><li><p>容量无限扩展<br>OBS所有业务、存储节点采用分布式集群方式工作，各功能节点、集群都可以独立扩容，整个扩容过程对用户完全透明。用户只需尽情享用云存储带来的无限空间，不必预测未来的存储需求并可以按需要向上和向下扩展，从而大幅提高业务灵活性。</p></li><li><p>维护成本更低<br>由于数据存储在OBS中，企业无需招聘专门的存储设备维护人员，设备的维护交由OBS处理即可。</p></li></ul><h1 id="实习问题记录"><a href="#实习问题记录" class="headerlink" title="实习问题记录"></a>实习问题记录</h1><h2 id="为什么GET-Bucket-List-Objects-在Object多时会慢？"><a href="#为什么GET-Bucket-List-Objects-在Object多时会慢？" class="headerlink" title="为什么GET Bucket (List Objects)在Object多时会慢？"></a>为什么GET Bucket (List Objects)在Object多时会慢？</h2><p>原问题“get bucket那个接口的实现比较麻烦，在object的量很大的情况下，这个接口的性能会很差。你可以想想这个问题”<br>根据API文档所说</p><ol><li>数据量大，多次循环调用该 API才可获得给定 Prefix 条件的所有对象列表。不像其他API只需要一次Http通信；网络通信次数多，</li><li>需要模拟文件系统的目录结构，对delimiter划分的相同前缀的多个对象遍历和合并。底层实现需要较深的函数调用栈或者内存空间。</li><li>Object数量多时更改更频繁，缓存容易失效</li></ol><p>不知道元信息的存储系统是否支持事务，如果不支持，并发情况下我觉得会加共享锁（读锁），锁竞争也会带来性能开销。可以用redis、zookeeper做分布式协调组件的情况下，可以多个请求竞争一个锁，只有一个请求到达并被处理，然后更新缓存供其他请求使用，从而提高吞吐量</p><p>就是关于 GET Bucket (List Objects)在Object多时性能很差的问题，有没有这几个原因</p><ol><li>网络IO次数多。根据文档所说，利用marker参数多次迭代调用该 API才可获得给定 Prefix 条件的所有对象列表。</li><li>计算资源消耗大。文档说支持用delimiter模拟文件系统的目录结构，对delimiter划分的相同前缀的多个对象遍历和合并。这需要较深的函数调用栈或者内存空间以及计算量。</li><li>保持实时性和一致性带来的开销。如文档所说，缓存容易失效，这会导致更多磁盘IO和数据处理。且读取过程中要加共享锁防止元数据被修改导致的一致性问题。</li></ol><p>看文档我觉得服务器应该是一次完成所有数据的处理，但要分段返回是因为数据可能太大吗？</p><p>关于处理方法<br>文档说因为性能问题不要依赖这个接口的并发调用，而是用户自己缓存数据，这是不是说对数据的准确性要求不太高。那这样后端在并发情况下通过选举其中一个请求到达服务器，从mysql或别的拿到结果放入缓存，其他请求都走缓存，就可以一定程度解决吞吐量的问题。同样，通过elasticsearch或者其他放弃事务机制的搜索方式元数据提高响应速度</p><h2 id="Q：“假设现在数据量在单机承受能力之内，用mysql来存储元信息，怎么处理list请求”"><a href="#Q：“假设现在数据量在单机承受能力之内，用mysql来存储元信息，怎么处理list请求”" class="headerlink" title="Q：“假设现在数据量在单机承受能力之内，用mysql来存储元信息，怎么处理list请求”"></a>Q：“假设现在数据量在单机承受能力之内，用mysql来存储元信息，怎么处理list请求”</h2><p>比如按照Zone划分表，表中有所属bucket信息，类型，大小，校验值，最后修改时间，特殊元信息等字段，可以在编程语言层面记录已经处理过的bucket，实现下次根据marker参数继续处理。事务机制（隔离性）可以方便地保证一致性问题，同时可以对marker或其他字段走索引加快IO速度。<br>mysql8之后已不自带缓存，如文档所说如果要加缓存可以用redis。同时在编程语言层面利用元信息的最后修改时间字段实现缓存自动更新。</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h1 id=&quot;对象存储&quot;&gt;&lt;a href=&quot;#对象存储&quot; class=&quot;headerlink&quot; title=&quot;对象存储&quot;&gt;&lt;/a&gt;对象存储&lt;/h1&gt;&lt;p&gt;“对象存储”来源于英文“Object Storage”或“Object-based Storage”&lt;/p&gt;
-&lt;h3 id=
-      
-    
-    </summary>
-    
-    
-    
-      <category term="笔记" scheme="http://yoursite.com/tags/%E7%AC%94%E8%AE%B0/"/>
-    
-      <category term="对象存储" scheme="http://yoursite.com/tags/%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8/"/>
-    
-  </entry>
-  
-  <entry>
     <title>Golang 学习笔记</title>
     <link href="http://yoursite.com/2019/06/02/2019-06-13-Go%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
     <id>http://yoursite.com/2019/06/02/2019-06-13-Go学习笔记/</id>
@@ -173,9 +173,37 @@
     
     
     
+      <category term="笔记" scheme="http://yoursite.com/tags/%E7%AC%94%E8%AE%B0/"/>
+    
       <category term="Golang" scheme="http://yoursite.com/tags/Golang/"/>
     
-      <category term="笔记" scheme="http://yoursite.com/tags/%E7%AC%94%E8%AE%B0/"/>
+  </entry>
+  
+  <entry>
+    <title>Java 并发计数器探秘</title>
+    <link href="http://yoursite.com/2019/06/02/2019-05-29-%E5%B9%B6%E5%8F%91%E8%AE%A1%E6%95%B0%E5%99%A8/"/>
+    <id>http://yoursite.com/2019/06/02/2019-05-29-并发计数器/</id>
+    <published>2019-06-02T04:33:14.000Z</published>
+    <updated>2019-09-01T02:35:00.926Z</updated>
+    
+    <content type="html"><![CDATA[<p>计数可以说是计算机硬件最常见的功能，CPU 可以通过 CAS（Compare and swap）算法保证并发下数据的准确性，包括 IA32、Space 在内的 CPU 架构中采用的都是CAS指令，其语义为“<strong>我认为V的值应该为A，如果是，那么将V的值更新为B，否则不修改并告诉V的值实际为多少</strong>”，本质上是由现代CPU在硬件级实现的原子指令，允许进行无阻塞，多线程的数据操作同时兼顾了安全性以及效率，是一种<strong>乐观锁</strong>技术。</p><p>具体来说就是，CAS有3个操作数，内存值V，旧的预期值A，要修改的新值B。当且仅当预期值A和内存值V相同时，将内存值V修改为B，否则什么都不做。常用于在多线程编程中实现不被打断的数据交换操作，从而避免多线程同时改写某一数据时由于执行顺序不确定性以及中断的不可预知性产生的数据不一致问题。</p><p>对照到 Java 中，java.util.concurrent.atomic 中的Atomic* 通过 Unsafe 类调用 JVM 提供的 CAS 操作使用了这项技术，这些类又在 java.util.concurrent 包中的其他类中广泛使用。JDK1.7 源码如下所示</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">long</span> <span class="title">getAndIncrement</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;  </span><br><span class="line">            <span class="keyword">long</span> current = get();  </span><br><span class="line">            <span class="keyword">long</span> next = current + <span class="number">1</span>;  </span><br><span class="line">            <span class="keyword">if</span> (compareAndSet(current, next))  </span><br><span class="line">                <span class="keyword">return</span> current;  </span><br><span class="line">        &#125;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">compareAndSet</span><span class="params">(<span class="keyword">int</span> expect, <span class="keyword">int</span> update)</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">return</span> unsafe.compareAndSwapLong(<span class="keyword">this</span>, valueOffset, expect, update);  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>首先，<code>get()</code>方法获取当前的 long 值，然后自增，随后自旋判断新值与当前值，如果成功就返回，否则返回1. 注意到调用的是 unsafe 方法中的 <code>compareAndSwapLong()</code>,这对应x86 CPU 上的 <code>LOCK CMPXCHG</code> ，而在 JDK1.8 中，使用 <code>getAndAddLong()</code> 完成 <code>getAndIncrement</code>，这对应 x86 CPU 上的 <code>LOCK XADD</code> 指令。</p><h1 id="ABA"><a href="#ABA" class="headerlink" title="ABA"></a>ABA</h1><p>从上文可以发现一个问题：如果V的值多次改变，且改变过程中起始数值一样，那么 CAS 操作依然和 V 值没有改变的情况一样，这就是 ABA 问题。<br>具体来说，</p><ul><li><p>线程1 试图改变 value1 的值，从0改为1</p></li><li><p>线程2 抢占 value1，从0改为2，又改为0</p></li><li><p>线程1 得到 vaule，发现没有改过，又改为1</p></li></ul><p>整个过程看起来没什么不对，毕竟殊途同归，但在使用指针操作一些并发数据结构时容易出现问题。<br>为了解决这个方案，可以采用 ABA’ 策略，添加额外的标记来记录修改，AtomicStampedReference 中的 compareAndSet 方法不仅会检查当前引用是否等于预期引用，而且会检查当前标志是否等于预期标志，全部相等才以原子方式将该引用和该标志的值设置为给定的更新值。</p><p>此外，如果 CAS 一直不成功，就会长期占用 CPU 时间，因此，JUC 中有些地方 如 BlockingQueue 的 SynchronousQueue 就限制了 CAS 的次数。<br>CAS 也只能针对一个共享变量操作，有多个共享变量只能用锁，或者把多个变量搞成一个变量。</p><p>因此，在 JDK1.8 中，提供了 java.util.concurrency.atomic.LongAdder 类，根据文档，其性能高于 AtomicLong，一般情况下可直接替代 AtomicLong 使用，只是 LongAdder 没有返回值，当需要返回值的时候，还是要用 AtomicLong 。Netty 中也有封装这两个类。</p><p>那么，LongAdder 是如何获得远高于 AtomicLong 的性能的呢？</p><ol><li><p>利用 Cell 减少并发修改时的冲突<br>在 LongAdder 父类 Striped64 中有 长度为2的 n 次方的volatile Cell[] cells，每个 cell 填充了一个  @Contended 的 Long 字段来避免伪共享问题。<br>假共享( false sharing)是指一种错误的工程实践,在同一块缓存线中存放多个互相独立且被多个CPU访问的变量，当某个CPU改变了其中一个变量的值时,迫使其他CPU的本地高速缓存中对应的相同缓存线无效化。这种工程实践会显著地限制并行系统的可扩展性。</p></li><li><p>使用 ThreadLocalRandom 替代 Random</p></li><li><p>longAccumulate 使用 UNSAFE.compareAndSwapLong 完成自旋，且在初次 cas 方式失败的情况下(说明多个线程同时想更新这个值)，尝试将这个值分隔成多个 Cell，让这些竞争的线程只负责更新自己所属的 Cell从而将竞争压力分散开。</p></li></ol><h1 id="发展"><a href="#发展" class="headerlink" title="发展"></a>发展</h1><ol><li>在 LongAdder 出现之前， Java 性能监控框架 dropwizard/metrics 就做了类似的事情，而在 metrics 的最新版本中，其已经使用 Jdk1.8 的 LongAdder 替换掉了自己的轮子。</li></ol><p>2.并发容器框架 JCTool 中也提供了类似实现，文档描述如下。</p><blockquote><p>An auto-resizing table of longs, supporting low-contention CAS operations.Updates are done with CAS’s to no particular table element.The intent is to support highly scalable counters, r/w locks, and other structures where the updates are associative, loss-free (no-brainer), and otherwise happen at such a high volume that the cache contention for CAS’ing a single word is unacceptable.</p></blockquote>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;计数可以说是计算机硬件最常见的功能，CPU 可以通过 CAS（Compare and swap）算法保证并发下数据的准确性，包括 IA32、Space 在内的 CPU 架构中采用的都是CAS指令，其语义为“&lt;strong&gt;我认为V的值应该为A，如果是，那么将V的值更新为B，
+      
+    
+    </summary>
+    
+    
+    
+      <category term="Java" scheme="http://yoursite.com/tags/Java/"/>
+    
+      <category term="并发" scheme="http://yoursite.com/tags/%E5%B9%B6%E5%8F%91/"/>
+    
+      <category term="计数器" scheme="http://yoursite.com/tags/%E8%AE%A1%E6%95%B0%E5%99%A8/"/>
     
   </entry>
   
@@ -204,34 +232,6 @@
       <category term="Lambda" scheme="http://yoursite.com/tags/Lambda/"/>
     
       <category term="设计模式" scheme="http://yoursite.com/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Java 并发计数器探秘</title>
-    <link href="http://yoursite.com/2019/06/02/2019-05-29-%E5%B9%B6%E5%8F%91%E8%AE%A1%E6%95%B0%E5%99%A8/"/>
-    <id>http://yoursite.com/2019/06/02/2019-05-29-并发计数器/</id>
-    <published>2019-06-02T04:33:14.000Z</published>
-    <updated>2019-09-01T02:35:00.926Z</updated>
-    
-    <content type="html"><![CDATA[<p>计数可以说是计算机硬件最常见的功能，CPU 可以通过 CAS（Compare and swap）算法保证并发下数据的准确性，包括 IA32、Space 在内的 CPU 架构中采用的都是CAS指令，其语义为“<strong>我认为V的值应该为A，如果是，那么将V的值更新为B，否则不修改并告诉V的值实际为多少</strong>”，本质上是由现代CPU在硬件级实现的原子指令，允许进行无阻塞，多线程的数据操作同时兼顾了安全性以及效率，是一种<strong>乐观锁</strong>技术。</p><p>具体来说就是，CAS有3个操作数，内存值V，旧的预期值A，要修改的新值B。当且仅当预期值A和内存值V相同时，将内存值V修改为B，否则什么都不做。常用于在多线程编程中实现不被打断的数据交换操作，从而避免多线程同时改写某一数据时由于执行顺序不确定性以及中断的不可预知性产生的数据不一致问题。</p><p>对照到 Java 中，java.util.concurrent.atomic 中的Atomic* 通过 Unsafe 类调用 JVM 提供的 CAS 操作使用了这项技术，这些类又在 java.util.concurrent 包中的其他类中广泛使用。JDK1.7 源码如下所示</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">long</span> <span class="title">getAndIncrement</span><span class="params">()</span> </span>&#123;  </span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;  </span><br><span class="line">            <span class="keyword">long</span> current = get();  </span><br><span class="line">            <span class="keyword">long</span> next = current + <span class="number">1</span>;  </span><br><span class="line">            <span class="keyword">if</span> (compareAndSet(current, next))  </span><br><span class="line">                <span class="keyword">return</span> current;  </span><br><span class="line">        &#125;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">compareAndSet</span><span class="params">(<span class="keyword">int</span> expect, <span class="keyword">int</span> update)</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">return</span> unsafe.compareAndSwapLong(<span class="keyword">this</span>, valueOffset, expect, update);  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>首先，<code>get()</code>方法获取当前的 long 值，然后自增，随后自旋判断新值与当前值，如果成功就返回，否则返回1. 注意到调用的是 unsafe 方法中的 <code>compareAndSwapLong()</code>,这对应x86 CPU 上的 <code>LOCK CMPXCHG</code> ，而在 JDK1.8 中，使用 <code>getAndAddLong()</code> 完成 <code>getAndIncrement</code>，这对应 x86 CPU 上的 <code>LOCK XADD</code> 指令。</p><h1 id="ABA"><a href="#ABA" class="headerlink" title="ABA"></a>ABA</h1><p>从上文可以发现一个问题：如果V的值多次改变，且改变过程中起始数值一样，那么 CAS 操作依然和 V 值没有改变的情况一样，这就是 ABA 问题。<br>具体来说，</p><ul><li><p>线程1 试图改变 value1 的值，从0改为1</p></li><li><p>线程2 抢占 value1，从0改为2，又改为0</p></li><li><p>线程1 得到 vaule，发现没有改过，又改为1</p></li></ul><p>整个过程看起来没什么不对，毕竟殊途同归，但在使用指针操作一些并发数据结构时容易出现问题。<br>为了解决这个方案，可以采用 ABA’ 策略，添加额外的标记来记录修改，AtomicStampedReference 中的 compareAndSet 方法不仅会检查当前引用是否等于预期引用，而且会检查当前标志是否等于预期标志，全部相等才以原子方式将该引用和该标志的值设置为给定的更新值。</p><p>此外，如果 CAS 一直不成功，就会长期占用 CPU 时间，因此，JUC 中有些地方 如 BlockingQueue 的 SynchronousQueue 就限制了 CAS 的次数。<br>CAS 也只能针对一个共享变量操作，有多个共享变量只能用锁，或者把多个变量搞成一个变量。</p><p>因此，在 JDK1.8 中，提供了 java.util.concurrency.atomic.LongAdder 类，根据文档，其性能高于 AtomicLong，一般情况下可直接替代 AtomicLong 使用，只是 LongAdder 没有返回值，当需要返回值的时候，还是要用 AtomicLong 。Netty 中也有封装这两个类。</p><p>那么，LongAdder 是如何获得远高于 AtomicLong 的性能的呢？</p><ol><li><p>利用 Cell 减少并发修改时的冲突<br>在 LongAdder 父类 Striped64 中有 长度为2的 n 次方的volatile Cell[] cells，每个 cell 填充了一个  @Contended 的 Long 字段来避免伪共享问题。<br>假共享( false sharing)是指一种错误的工程实践,在同一块缓存线中存放多个互相独立且被多个CPU访问的变量，当某个CPU改变了其中一个变量的值时,迫使其他CPU的本地高速缓存中对应的相同缓存线无效化。这种工程实践会显著地限制并行系统的可扩展性。</p></li><li><p>使用 ThreadLocalRandom 替代 Random</p></li><li><p>longAccumulate 使用 UNSAFE.compareAndSwapLong 完成自旋，且在初次 cas 方式失败的情况下(说明多个线程同时想更新这个值)，尝试将这个值分隔成多个 Cell，让这些竞争的线程只负责更新自己所属的 Cell从而将竞争压力分散开。</p></li></ol><h1 id="发展"><a href="#发展" class="headerlink" title="发展"></a>发展</h1><ol><li>在 LongAdder 出现之前， Java 性能监控框架 dropwizard/metrics 就做了类似的事情，而在 metrics 的最新版本中，其已经使用 Jdk1.8 的 LongAdder 替换掉了自己的轮子。</li></ol><p>2.并发容器框架 JCTool 中也提供了类似实现，文档描述如下。</p><blockquote><p>An auto-resizing table of longs, supporting low-contention CAS operations.Updates are done with CAS’s to no particular table element.The intent is to support highly scalable counters, r/w locks, and other structures where the updates are associative, loss-free (no-brainer), and otherwise happen at such a high volume that the cache contention for CAS’ing a single word is unacceptable.</p></blockquote>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;计数可以说是计算机硬件最常见的功能，CPU 可以通过 CAS（Compare and swap）算法保证并发下数据的准确性，包括 IA32、Space 在内的 CPU 架构中采用的都是CAS指令，其语义为“&lt;strong&gt;我认为V的值应该为A，如果是，那么将V的值更新为B，
-      
-    
-    </summary>
-    
-    
-    
-      <category term="Java" scheme="http://yoursite.com/tags/Java/"/>
-    
-      <category term="计数器" scheme="http://yoursite.com/tags/%E8%AE%A1%E6%95%B0%E5%99%A8/"/>
-    
-      <category term="并发" scheme="http://yoursite.com/tags/%E5%B9%B6%E5%8F%91/"/>
     
   </entry>
   
@@ -477,9 +477,9 @@
     
     
     
-      <category term="笔记" scheme="http://yoursite.com/tags/%E7%AC%94%E8%AE%B0/"/>
-    
       <category term="性能" scheme="http://yoursite.com/tags/%E6%80%A7%E8%83%BD/"/>
+    
+      <category term="笔记" scheme="http://yoursite.com/tags/%E7%AC%94%E8%AE%B0/"/>
     
       <category term="测试" scheme="http://yoursite.com/tags/%E6%B5%8B%E8%AF%95/"/>
     
