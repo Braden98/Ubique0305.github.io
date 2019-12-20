@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="代码应该以怎样的顺序组织？"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/atom.xml" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=" />
+<link rel="canonical" href="http://yoursite.com/2019/09/02/order_of_code/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" /><script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=" />
+
+<script id="baidu_analytics">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?7f52ad98103933a0875502b3b2a71682";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script><script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":true};
+</script>
+
+    <title>代码应该以怎样的顺序组织？ - Ubik's blog</title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Ubik's blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">Home
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">Archives
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Ubik's blog</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            Home
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            Archives
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            Tags
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            About
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">代码应该以怎样的顺序组织？
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-09-02
+        </span></div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">Contents</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#关于代码的顺序"><span class="toc-text">关于代码的顺序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#变量限定词的顺序"><span class="toc-text">变量限定词的顺序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#文件顺序"><span class="toc-text">文件顺序</span></a></li></ol>
+    </div>
+  </div><div class="post-content"><h1 id="关于代码的顺序"><a href="#关于代码的顺序" class="headerlink" title="关于代码的顺序"></a>关于代码的顺序</h1><p>为了更快地读和理解代码，应该统一代码块、变量、方法修饰符的顺序，这样即使只是自己看也会更清爽。我没有在开发手册中看到对于这些东西的具体规范，于是在网上找到了一个我认为合适的规范。如果以后工作有变，再修改这篇博客。<br>首先，头部的版权和许可声明、package以及 import 就不多说了，不这么写编译器根本通不过。<br>其次就是类的定义了，与之前写法一样，依次是</p>
+<ol>
+<li>类的规范（注释）</li>
+<li>类的声明</li>
+<li>类的属性和方法</li>
+</ol>
+<p>3中顺序为</p>
+<ol>
+<li>类的属性</li>
+<li>构造方法</li>
+<li>工厂方法</li>
+<li>其他方法<br>（JDK 中有一些或者说大致就是这个顺序（与平常写法类似））。唯一要解释的是工厂方法不是构造方法却可以构造类，所以放在构造方法和一般方法之间。</li>
+</ol>
+<p>对于方法，公有方法应有</p>
+<ol>
+<li>方法规范</li>
+<li>方法声明</li>
+<li>方法实现<br>规范应包括 </li>
+</ol>
+<ul>
+<li>方法介绍</li>
+<li>注意事项<code>@apiNote</code></li>
+<li>实现方法的要求<code>@implSpec</code></li>
+<li>实现方法的注意事项<code>@implNote</code></li>
+<li>参数、返回值、异常（受检异常和运行时异常都要）<br>还有一些可选项，如创始版本<code>@since</code>（当创始版本和所属类创始版本一致时可以省略，否则要加上）,参考接口索引等。</li>
+</ul>
+<h1 id="变量限定词的顺序"><a href="#变量限定词的顺序" class="headerlink" title="变量限定词的顺序"></a>变量限定词的顺序</h1><p>我们总是会写 <code>psvm</code>（用IDEA的都知道啥意思，哈哈），这里我使用这个顺序来做规范。当然，一般用会用到这么多，但要知道有这个规范。</p>
+<ol>
+<li>public/private/protected (访问控制限定词，制定访问权限) 2. abstract (抽象类或者抽象方法，具体实现由子类完成)</li>
+<li>static (静态类、方法或者类属性)</li>
+<li>final (定义不能被修改的类、方法或者类属性)</li>
+<li>transient(定义不能被序列化的类属性) 6. volatile(定义使用主内存的变量)</li>
+<li>default(声明缺省的方法)</li>
+<li>synchronized(声明同步的方法)</li>
+<li>native(声明本地的方法，也就是 Java 以外的语言实现的方法) 10. strictfp(声明使用精确浮点运算)。</li>
+</ol>
+<p>理论上，这些问题都是 compile 过程中语法分析的问题，如前所说，可以通过静态代码检查工具实现，阿里巴巴针对IDEA 推出的规范工具我也在用，只是有一些功能如限定词顺序，空行分割代码块还未实现，且检查工具归根到底也要你自己改正，所以这些代码组织方式还是要熟悉，起码知道有这么回事，尽量写出 well organized code，我觉得这是一种乐趣。</p>
+<h1 id="文件顺序"><a href="#文件顺序" class="headerlink" title="文件顺序"></a>文件顺序</h1><p>代码之上一层就是文件，这同样影响可读性。</p>
+<ol>
+<li><p>COPYRIGHT 版权放在根目录（在并非每个源文件头都有版权的情况下这么干），说明这个软件归属谁、有什么版权诉求。</p>
+</li>
+<li><p>LICENSE 也放在根目录下边，决定能否使用、如何使用。</p>
+</li>
+<li><p>README 具体怎么操作来使用，放在根目录下，markdown 编写</p>
+</li>
+<li><p>src 软件是怎么实现的。内部应分文件对应不同的 package（Golang 文件和 package 不重合）</p>
+</li>
+<li><p>test 存放测试代码，内部文件应分开以对应不同的功能</p>
+</li>
+<li><p>doc 使用指南和代码示例，给非开发人员或者说用软件的人做。</p>
+</li>
+<li><p>make 代码的构建脚本</p>
+</li>
+</ol>
+<p>在实际操作中，写好代码的方法自然不会只有这一种，如前文所说，这只是为了达成 consensus for high productivity。代码本质上还是需求决定的</p>
+
+      </div>
+      <div class="post-copyright">
+    <p class="copyright-item">
+      <span>Author: </span>
+      <a href="http://yoursite.com">Adam Ubik</a>
+    </p>
+    <p class="copyright-item">
+      <span>License: </span><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/code/">code</a>
+            <a href="/tags/%E8%A7%84%E8%8C%83/">规范</a>
+            </div>
+        
+        <nav class="post-nav"><a class="prev" href="/2019/09/03/safety_and_effcience_of_code/">
+        <i class="iconfont icon-left"></i>
+        <span class="prev-text nav-default">什么是好的代码?</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    <a class="next" href="/2019/09/01/how%20to%20ask/">
+        <span class="next-text nav-default">提问的艺术,如何问才更可能得到想要的答案</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:Dingbiao1998@icloud.com" target="_blank" rel="noopener" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/Ubique0305" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="copyright-year">&copy;2018 - 2019<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Adam Ubik</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v="></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>

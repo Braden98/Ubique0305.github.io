@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="Fibonacci 数列的最优解及特征方程的一般解法"/><meta name="keywords" content="技术 Java Rust" /><link rel="alternate" href="/atom.xml" title="Ubik's blog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=" />
+<link rel="canonical" href="http://yoursite.com/2019/09/08/fib/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" /><script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+  </script>
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=" />
+
+<script id="baidu_analytics">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?7f52ad98103933a0875502b3b2a71682";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script><script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":true};
+</script>
+
+    <title>Fibonacci 数列的最优解及特征方程的一般解法 - Ubik's blog</title>
+  </head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">Ubik's blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">Home
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">Archives
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">About
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">Ubik's blog</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            Home
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            Archives
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            Tags
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            About
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">Fibonacci 数列的最优解及特征方程的一般解法
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2019-09-08
+        </span></div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">Contents</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#fib-问题"><span class="toc-text">fib 问题</span></a></li></ol>
+    </div>
+  </div><div class="post-content"><h1 id="fib-问题"><a href="#fib-问题" class="headerlink" title="fib 问题"></a>fib 问题</h1><p><code>fib(n) = fib(n-1) + fib(n-2),n &gt; 2 且 fib(1) = fib(2) = 1</code><br>编程求 fib(n)<br>把 <code>fib</code> 看作一个函数，公式直接告诉我们递推和边界条件（n = 1和n = 2)。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(n &lt; <span class="number">1</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(n == <span class="number">1</span> || n == <span class="number">2</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> f1(n - <span class="number">1</span>) + f1(n - <span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+<p>随后，我们可以很简单地把递归变为递推，如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> dp[] = <span class="keyword">new</span> <span class="keyword">int</span>[n+<span class="number">1</span>];</span><br><span class="line">       dp[<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">       dp[<span class="number">2</span>] = <span class="number">1</span>;</span><br><span class="line">       <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">3</span>;i &lt;= n;i++)&#123;</span><br><span class="line">           dp[i] = dp[i - <span class="number">1</span>] + dp[i - <span class="number">2</span>];</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">return</span> dp[n];</span><br></pre></td></tr></table></figure>
+<p>这样，对于每次的n，都要有 O(n) 的时间复杂度，我们可以把计算的过程“缓存“起来，对于上述递推，只要把 dp 数组放到外边，避免每次调用f函数都重新计算，或者设置一个 flag 看是否已经算好了，这里不再赘述。</p>
+<p>但是，注意到文章开头提到的递推式对应一个二阶递推数列，可以用矩阵乘法的形式（而不是前边说到的按照公式一步步求）表达其递推式，而矩阵乘法类似快速幂，可以通过<strong>分治</strong>降低时间复杂度至 O(logN)。<br>于是，我们先解决矩阵乘法问题，回忆线性代数所学，关键代码下，</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m1.length; i++)&#123;</span><br><span class="line">           <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; m2[<span class="number">0</span>].length;j++)&#123;</span><br><span class="line">               <span class="keyword">for</span>(<span class="keyword">int</span> k = <span class="number">0</span>; k &lt; m2.length; k++ )&#123;</span><br><span class="line">                    res[i][j] += m1[i][k] * m2[k][j];</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
+<p>当然，对于muliMatrix函数的参数，我们应给予valid 验证</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> (m1 == <span class="keyword">null</span> || m1.length == <span class="number">0</span> || m1[<span class="number">0</span>] == <span class="keyword">null</span> || m1[<span class="number">0</span>].length == <span class="number">0</span> || m2 == <span class="keyword">null</span> || m2.length == <span class="number">0</span> </span><br><span class="line">        || m2[<span class="number">0</span>] == <span class="keyword">null</span> || m2[<span class="number">0</span>].length == <span class="number">0</span> || m1[<span class="number">0</span>].length != m2.length)</span><br></pre></td></tr></table></figure>
+<p>接下来是<strong>矩阵的幂次方</strong>问题，与整数的幂次方类似，以 71 为例子，71的二进制表示为 1001001，于是，10 的 71次方表示为 <code>10^64 * 10^8 * 10^1</code>，同理应用于 矩阵乘法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(;p != <span class="number">0</span>; p &gt;&gt;= <span class="number">1</span>)&#123;</span><br><span class="line">            <span class="comment">//这里(p &amp; 1)要加括号</span></span><br><span class="line">            <span class="keyword">if</span>( (p &amp; <span class="number">1</span>) != <span class="number">0</span>)&#123;</span><br><span class="line">                res = muliMatrix(res , tmp);</span><br><span class="line">            &#125;</span><br><span class="line">            tmp = muliMatrix(tmp,tmp);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p>最后，我们要找出文章开头的递推公式对应的状态矩阵，对于一个二阶递推数列，其状态矩阵是<code>2*2</code>的方阵,从而有<br><code>(fib(n),fib(n-1))= (fib(n-1),fib(n-2)) * [[a,b],[c,d]]</code><br>带入 fib 前四项，可求得状态矩阵<code>[[1,1],[1,0]]</code>.<br>从而，fib数列的通项表示为 <code>[[1,1],[1,0]] ^ (n-2)</code>的第一列的和：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span>[][] base = &#123;&#123;<span class="number">1</span>,<span class="number">1</span>&#125;,&#123;<span class="number">1</span>,<span class="number">0</span>&#125;&#125;;</span><br><span class="line">        <span class="keyword">int</span>[][] res = matrixPower(base, n-<span class="number">2</span>);</span><br><span class="line">        <span class="keyword">return</span> res[<span class="number">0</span>][<span class="number">0</span>] + res[<span class="number">1</span>][<span class="number">0</span>];</span><br></pre></td></tr></table></figure>
+<p>至此，时间复杂度 O(logN),常数空间复杂度的 fib(n) 求法get。对于三阶或者更高阶递推数列也是一样的道理，矩阵乘法和幂次都可直接复用，唯一的不同是手动计算状态矩阵。</p>
+
+      </div>
+      <div class="post-copyright">
+    <p class="copyright-item">
+      <span>Author: </span>
+      <a href="http://yoursite.com">Adam Ubik</a>
+    </p>
+    <p class="copyright-item">
+      <span>License: </span><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank">知识共享署名-非商业性使用 4.0 国际许可协议</a>
+    </p>
+  </div>
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>
+            <a href="/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/">动态规划</a>
+            </div>
+        
+        <nav class="post-nav"><a class="next" href="/2019/09/03/redis2/">
+        <span class="next-text nav-default">redis学习笔记</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:Dingbiao1998@icloud.com" target="_blank" rel="noopener" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/Ubique0305" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="copyright-year">&copy;2018 - 2019<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Adam Ubik</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v="></script>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
